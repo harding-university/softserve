@@ -21,10 +21,6 @@ STATE_REGEX = r"(\d?\d,\d?\d\|){0,32}(\d?\d,\d?\d[ht]\d?\d|){0,32}[ht]"
 app = FastAPI()
 
 
-class EngineResponse(BaseModel):
-    log: str
-
-
 def engine(*args) -> (str, str):
     p = run([ENGINE] + list(args), capture_output=True, encoding="utf-8")
 
@@ -36,7 +32,25 @@ def engine(*args) -> (str, str):
 
 def get_actions(state: str) -> (list[str], str):
     stdout, stderr = engine("-l", state)
+
+    if stdout.strip() == "terminal state":
+        return ([], stderr)
+
     return (stdout.strip().split("\n"), stderr)
+
+
+class EngineResponse(BaseModel):
+    log: str
+
+
+class StateInitialResponse(EngineResponse):
+    state: str
+
+
+@app.get("/state/initial", response_model=StateInitialResponse)
+async def state_initial() -> StateInitialResponse:
+    stdout, stderr = engine("-I")
+    return StateInitialResponse(state=stdout.strip(), log=stderr)
 
 
 class StateActionsResponse(EngineResponse):
@@ -66,13 +80,3 @@ async def state_act(
 
     stdout, stderr = engine("-a", action, state)
     return StateActResponse(state=stdout.strip(), log=stderr)
-
-
-class StateInitialResponse(EngineResponse):
-    state: str
-
-
-@app.get("/state/initial", response_model=StateInitialResponse)
-async def state_initial() -> StateInitialResponse:
-    stdout, stderr = engine("-I")
-    return StateInitialResponse(state=stdout.strip(), log=stderr)

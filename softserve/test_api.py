@@ -1,8 +1,13 @@
 from random import choice
 
 from fastapi.testclient import TestClient
+import pytest
 
 from .api import app
+
+
+# When to abandon a random walk test
+WALK_BACKOUT_DEPTH = 50
 
 
 client = TestClient(app)
@@ -26,11 +31,16 @@ def test_initial_state_actions():
 def test_state_action_walk():
     state = get_initial_state()
 
-    # TODO terminal states instead of hardcoded depth
-    for _ in range(20):
+    for _ in range(WALK_BACKOUT_DEPTH):
+        actions = get_actions(state).keys()
+
+        # Terminal state
+        if not actions:
+            return
+
         action = choice(list(get_actions(state).keys()))
         r = client.get(f"/state/{state}/act/{action}")
         assert r.status_code == 200
         state = r.json()["state"]
-        print(action)
-        print(r.json()["log"])
+
+    pytest.fail("Random walk depth exceeded")
