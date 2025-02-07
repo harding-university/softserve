@@ -1,4 +1,8 @@
-api-dev:
+api:
+	poetry run fastapi run softserve/api.py
+
+
+dev:
 	poetry run fastapi dev softserve/api.py
 
 
