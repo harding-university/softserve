@@ -9,7 +9,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = {extras = ["standard"], version = "0.112.0,<0.115.0"}
+fastapi = {extras = ["standard"], version = ">=0.115.0,<0.116.0"}
 
 
 [tool.poetry.group.dev.dependencies]
