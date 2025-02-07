@@ -1,5 +1,7 @@
 from os import environ
+from random import choice, randrange
 from subprocess import run
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Path
 from pydantic import BaseModel
@@ -20,6 +22,9 @@ STATE_REGEX = r"(\d?\d,\d?\d\|){0,32}(\d?\d,\d?\d[ht]\d?\d|){0,32}[ht]"
 
 app = FastAPI()
 
+# TODO stub support, to be removed
+stub_db = {}
+
 
 def engine(*args) -> (str, str):
     p = run([ENGINE] + list(args), capture_output=True, encoding="utf-8")
@@ -37,6 +42,30 @@ def get_actions(state: str) -> (list[str], str):
         return ([], stderr)
 
     return (stdout.strip().split("\n"), stderr)
+
+
+# TODO stub support, to be removed
+def get_arbitrary_state() -> str:
+    stdout, _ = engine("-I")
+    state = stdout.strip()
+    for i in range(randrange(20)):
+        action = choice(get_actions(state)[0])
+        stdout, _ = engine("-a", action, state)
+        state = stdout.strip()
+    return state
+
+
+class PlayerRequest(BaseModel):
+    state: str
+    uuid: str
+
+
+# TODO stub
+@app.get("/player/{player}/request", response_model=PlayerRequest)
+def player_request(player: int) -> PlayerRequest:
+    state = get_arbitrary_state()
+    uuid = str(uuid4())
+    return PlayerRequest(state=state, uuid=uuid)
 
 
 class EngineResponse(BaseModel):
