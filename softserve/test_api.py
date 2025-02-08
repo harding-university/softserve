@@ -47,20 +47,20 @@ def test_state_action_walk():
 
 
 def test_player_play():
-    r = client.post("/player/1/play-state")
+    r = client.post("/aivai/play-state")
     assert r.status_code == 200
 
     state = r.json()["state"]
     uuid = r.json()["uuid"]
 
     # Try an invalid action
-    r = client.post("/player/1/submit-action", json={"action": "invalid", "uuid": uuid})
+    r = client.post("/aivai/submit-action", json={"action": "invalid", "uuid": uuid})
     assert r.status_code == 422
 
     action = choice(list(get_actions(state).keys()))
-    r = client.post("/player/1/submit-action", json={"action": action, "uuid": uuid})
+    r = client.post("/aivai/submit-action", json={"action": action, "uuid": uuid})
     assert r.status_code == 200
 
     # Confirm uuid no longer exists
-    r = client.post("/player/1/submit-action", json={"action": action, "uuid": uuid})
+    r = client.post("/aivai/submit-action", json={"action": action, "uuid": uuid})
     assert r.status_code == 404

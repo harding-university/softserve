@@ -20,7 +20,20 @@ STATE_REGEX = r"(\d?\d,\d?\d\|){0,32}(\d?\d,\d?\d[ht]\d?\d|){0,32}[ht]"
 # TODO action regex
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Softserve",
+    description="""""",
+    openapi_tags=[
+        {
+            "name": "aivai",
+            "description": "AI versus AI interface.",
+        },
+        {
+            "name": "state",
+            "description": "Basic operations on states, including transitions. For convenience and testing.",
+        },
+    ],
+)
 
 # TODO stub support, to be removed
 stub_db = {}
@@ -55,29 +68,38 @@ def get_arbitrary_state() -> str:
     return state
 
 
-class PlayerPlayState(BaseModel):
+class AIvAIPlayState(BaseModel):
     state: str
     uuid: str
 
 
 # TODO stub
-@app.post("/player/{player}/play-state", response_model=PlayerPlayState)
-def player_request(player: int) -> PlayerPlayState:
+@app.post(
+    "/aivai/play-state",
+    response_model=AIvAIPlayState,
+    tags=["aivai"],
+    summary="Get a state to play.",
+)
+def aivai_request() -> AIvAIPlayState:
     state = get_arbitrary_state()
     uuid = str(uuid4())
 
     stub_db[uuid] = state
 
-    return PlayerPlayState(state=state, uuid=uuid)
+    return AIvAIPlayState(state=state, uuid=uuid)
 
 
-class PlayerSubmitAction(BaseModel):
+class AIvAISubmitAction(BaseModel):
     action: str
     uuid: str
 
 
-@app.post("/player/{player}/submit-action")
-def player_submit_action(s: PlayerSubmitAction):
+@app.post(
+    "/aivai/submit-action",
+    tags=["aivai"],
+    summary="Submit an action for a requested state.",
+)
+def aivai_submit_action(s: AIvAISubmitAction):
     try:
         state = stub_db[s.uuid]
     except KeyError:
@@ -98,7 +120,12 @@ class StateInitialResponse(EngineResponse):
     state: str
 
 
-@app.get("/state/initial", response_model=StateInitialResponse)
+@app.get(
+    "/state/initial",
+    response_model=StateInitialResponse,
+    tags=["state"],
+    summary="Get initial state.",
+)
 async def state_initial() -> StateInitialResponse:
     stdout, stderr = engine("-I")
     return StateInitialResponse(state=stdout.strip(), log=stderr)
@@ -108,7 +135,12 @@ class StateActionsResponse(EngineResponse):
     actions: dict[str, str]
 
 
-@app.get("/state/{state}/actions", response_model=StateActionsResponse)
+@app.get(
+    "/state/{state}/actions",
+    response_model=StateActionsResponse,
+    tags=["state"],
+    summary="Get actions available from the given state.",
+)
 async def state_actions(state: str = Path(pattern=STATE_REGEX)) -> StateActionsResponse:
     actions, stderr = get_actions(state)
     action_states = {
@@ -121,7 +153,11 @@ class StateActResponse(EngineResponse):
     state: str
 
 
-@app.get("/state/{state}/act/{action}")
+@app.get(
+    "/state/{state}/act/{action}",
+    tags=["state"],
+    summary="Get resulting state after playing the given action at the given state.",
+)
 async def state_act(
     state: str = Path(pattern=STATE_REGEX), action: str = Path()
 ) -> StateActResponse:
