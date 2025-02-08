@@ -55,17 +55,39 @@ def get_arbitrary_state() -> str:
     return state
 
 
-class PlayerRequest(BaseModel):
+class PlayerPlayState(BaseModel):
     state: str
     uuid: str
 
 
 # TODO stub
-@app.get("/player/{player}/request", response_model=PlayerRequest)
-def player_request(player: int) -> PlayerRequest:
+@app.post("/player/{player}/play-state", response_model=PlayerPlayState)
+def player_request(player: int) -> PlayerPlayState:
     state = get_arbitrary_state()
     uuid = str(uuid4())
-    return PlayerRequest(state=state, uuid=uuid)
+
+    stub_db[uuid] = state
+
+    return PlayerPlayState(state=state, uuid=uuid)
+
+
+class PlayerSubmitAction(BaseModel):
+    action: str
+    uuid: str
+
+
+@app.post("/player/{player}/submit-action")
+def player_submit_action(s: PlayerSubmitAction):
+    try:
+        state = stub_db[s.uuid]
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"UUID not found")
+
+    actions, stderr = get_actions(state)
+    if s.action not in actions:
+        raise HTTPException(status_code=422, detail="invalid action")
+
+    del stub_db[s.uuid]
 
 
 class EngineResponse(BaseModel):
