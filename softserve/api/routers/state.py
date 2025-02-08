@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path
-from pydantic import BaseModel
 
+from ..schema import *
 from ..util import engine, get_actions
 
 
@@ -8,54 +8,35 @@ STATE_REGEX = r"(\d?\d,\d?\d\|){0,32}(\d?\d,\d?\d[ht]\d?\d|){0,32}[ht]"
 # TODO action regex
 
 
-router = APIRouter()
-
-
-class EngineResponse(BaseModel):
-    log: str
-
-
-class StateInitialResponse(EngineResponse):
-    state: str
+router = APIRouter(prefix="/state", tags=["state"])
 
 
 @router.get(
-    "/state/initial",
+    "/initial",
     response_model=StateInitialResponse,
-    tags=["state"],
-    summary="Get initial state.",
+    summary="Get initial state",
+    description="""
+Returns serialized representation of the initial game state.
+""",
 )
 async def state_initial() -> StateInitialResponse:
     stdout, stderr = engine("-I")
     return StateInitialResponse(state=stdout.strip(), log=stderr)
 
 
-class StateActionsResponse(EngineResponse):
-    actions: dict[str, str]
-
-
 @router.get(
-    "/state/{state}/actions",
+    "/{state}/actions",
     response_model=StateActionsResponse,
-    tags=["state"],
-    summary="Get actions available from the given state.",
+    summary="Get actions available from the given state",
 )
 async def state_actions(state: str = Path(pattern=STATE_REGEX)) -> StateActionsResponse:
     actions, stderr = get_actions(state)
-    action_states = {
-        action: engine("-a", action, state)[0].strip() for action in actions
-    }
-    return StateActionsResponse(actions=action_states, log=stderr)
-
-
-class StateActResponse(EngineResponse):
-    state: str
+    return StateActionsResponse(actions=actions, log=stderr)
 
 
 @router.get(
-    "/state/{state}/act/{action}",
-    tags=["state"],
-    summary="Get resulting state after playing the given action at the given state.",
+    "/{state}/act/{action}",
+    summary="Get resulting state after playing the given action at the given state",
 )
 async def state_act(
     state: str = Path(pattern=STATE_REGEX), action: str = Path()

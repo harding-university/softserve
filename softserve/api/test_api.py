@@ -32,13 +32,13 @@ def test_state_action_walk():
     state = get_initial_state()
 
     for _ in range(WALK_BACKOUT_DEPTH):
-        actions = get_actions(state).keys()
+        actions = get_actions(state)
 
         # Terminal state
         if not actions:
             return
 
-        action = choice(list(get_actions(state).keys()))
+        action = choice(list(get_actions(state)))
         r = client.get(f"/state/{state}/act/{action}")
         assert r.status_code == 200
         state = r.json()["state"]
@@ -57,7 +57,7 @@ def test_player_play():
     r = client.post("/aivai/submit-action", json={"action": "invalid", "uuid": uuid})
     assert r.status_code == 422
 
-    action = choice(list(get_actions(state).keys()))
+    action = choice(list(get_actions(state)))
     r = client.post("/aivai/submit-action", json={"action": action, "uuid": uuid})
     assert r.status_code == 200
 
