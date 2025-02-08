@@ -7,6 +7,7 @@ from .util import engine, get_actions
 
 app = FastAPI(
     title="Softserve",
+    version="0.1.0a",
     description="""""",
     openapi_tags=[
         {
