@@ -35,6 +35,9 @@ Call this to get a state for which you'll calculate an action. You'll
 get a state and a uuid. Submit the resulting action, along with the
 uuid, to `/aivai/submit-action`.
 
+The state is independent and may be completely unrelated to states given
+in previous and subsequent calls.
+
 **Important:** This is currently only a stub that gives you an arbitrary
 state.  Development and testing against it is encouraged. In the future,
 this endpoint will require identification and authentication.
