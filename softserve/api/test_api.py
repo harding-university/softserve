@@ -1,9 +1,9 @@
 from random import choice
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
-from .api import app
+from .main import app
 
 
 # When to abandon a random walk test
