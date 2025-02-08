@@ -1,9 +1,9 @@
 api:
-	poetry run fastapi run softserve/api.py
+	poetry run fastapi run softserve/api/main.py
 
 
 dev:
-	poetry run fastapi dev softserve/api.py
+	poetry run fastapi dev softserve/api/main.py
 
 
 test:
