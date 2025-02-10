@@ -10,7 +10,7 @@ app = FastAPI(
     version="0.1.0a",
     description="""
 # Overview
-Softseve is an integration system for Harding University software
+Softserve is an integration system for Harding University software
 development capstone projects. Student projects interact with the system
 using this API.
 

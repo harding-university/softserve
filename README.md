@@ -1,5 +1,5 @@
 # Softserve
-Softseve is an integration system for Harding University software development capstone projects.
+Softserve is an integration system for Harding University software development capstone projects.
 
 Student projects interact with the system using the API. See https://softserve.harding.edu/docs or https://softserve.harding.edu/redoc for usage information. (The API server is only available on campus, and only active during capstone sessions.)
 
