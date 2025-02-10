@@ -8,7 +8,25 @@ from .util import engine, get_actions
 app = FastAPI(
     title="Softserve",
     version="0.1.0a",
-    description="""""",
+    description="""
+# Overview
+Softseve is an integration system for Harding University software
+development capstone projects. Student projects interact with the system
+using this API.
+
+There are two versions of these docs:
+1. [Swagger UI](docs)
+2. [ReDoc](redoc)
+
+Students should freely [create issues](https://github.com/harding-university/softserve/issues) for any problems, questions, or feature requests.
+
+To get oriented, here are some things to try:
+
+1. Get the initial state from `/state/initial` and walk through a game
+from there using `/state/actions` and `/state/act`
+2. Walk through the loop described in the `aivai` section.
+
+""",
     openapi_tags=[
         {
             "name": "aivai",
