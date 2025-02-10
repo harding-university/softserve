@@ -25,7 +25,7 @@ def get_actions(state):
 
 def test_initial_state_actions():
     state = get_initial_state()
-    assert len(get_actions(state)) == 3
+    assert len(get_actions(state)) == 3 * 24
 
 
 def test_state_action_walk():
