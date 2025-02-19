@@ -25,7 +25,7 @@ def get_arbitrary_state() -> str:
             stdout, _ = engine("-a", action, state)
             state = stdout.strip()
         return state
-    except Exeception:
+    except Exception:
         return initial_state
 
 
