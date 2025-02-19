@@ -45,6 +45,9 @@ this endpoint will require identification and authentication.
 )
 def aivai_request() -> AIvAIPlayState:
     state = get_arbitrary_state()
+    while len(get_actions(state)) == 0:
+        state = get_arbitrary_state()
+
     uuid = str(uuid4())
 
     stub_db[uuid] = state
