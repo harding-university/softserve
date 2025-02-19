@@ -18,11 +18,15 @@ stub_db = {}
 def get_arbitrary_state() -> str:
     stdout, _ = engine("-I")
     state = stdout.strip()
-    for i in range(randrange(20)):
-        action = choice(get_actions(state)[0])
-        stdout, _ = engine("-a", action, state)
-        state = stdout.strip()
-    return state
+    initial_state = state
+    try:
+        for i in range(randrange(20)):
+            action = choice(get_actions(state)[0])
+            stdout, _ = engine("-a", action, state)
+            state = stdout.strip()
+        return state
+    except Exeception:
+        return initial_state
 
 
 # TODO stub
