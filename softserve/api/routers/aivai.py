@@ -50,7 +50,7 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     # Create a pending action on the game
     action = game.next_action()
 
-    return AIvAIPlayStateResponse(state=action.before_state, aid=action.id)
+    return AIvAIPlayStateResponse(state=action.before_state, action_id=action.id)
 
 
 @router.post(
@@ -77,7 +77,7 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
 
     # Get action
     try:
-        action = Action.objects.get(pk=req.aid)
+        action = Action.objects.get(pk=req.action_id)
     except Action.DoesNotExist:
         raise HTTPException(status_code=404, detail="action_id not found")
 

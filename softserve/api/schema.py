@@ -10,13 +10,13 @@ class AIvAIPlayState(BaseModel):
 
 class AIvAIPlayStateResponse(BaseModel):
     state: str
-    aid: int
+    action_id: int
 
 
 class AIvAISubmitAction(BaseModel):
     action: str
     player: str
-    aid: str
+    action_id: int
 
 
 class AIvAISubmitActionResponse(BaseModel):
@@ -37,3 +37,7 @@ class StateActionsResponse(EngineResponse):
 
 class StateActResponse(EngineResponse):
     state: str
+
+
+class StateWinnerResponse(EngineResponse):
+    winner: str

@@ -62,3 +62,23 @@ async def state_act(
 
     stdout, stderr = engine("-a", action, state)
     return StateActResponse(state=stdout.strip(), log=stderr)
+
+
+@router.get(
+    "/{state}/winner",
+    response_model=StateWinnerResponse,
+    summary="Get the winner at a given state, if any",
+    description="""
+Returns one of the following, describing the winner of the current state:
+- `none` (ongoing game)
+- `h`
+- `t`
+- `draw`
+
+If you believe the determination is incorrect, [open an
+issue](https://github.com/harding-university/softserve/issues).
+""",
+)
+async def state_winner(state: str = Path(pattern=STATE_REGEX)) -> StateWinnerResponse:
+    stdout, stderr = engine("-W", state)
+    return StateWinnerResponse(winner=stdout.strip(), log=stderr)
