@@ -19,7 +19,7 @@ migrate:
 
 
 test:
-	poetry run pytest -s
+	poetry run python manage.py test
 
 
 format:
