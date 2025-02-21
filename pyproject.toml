@@ -11,6 +11,7 @@ readme = "README.md"
 python = "^3.12"
 fastapi = {extras = ["standard"], version = ">=0.115.0,<0.116.0"}
 django = "^5.1.6"
+psycopg = {extras = ["binary"], version = "^3.2.4"}
 
 
 [tool.poetry.group.dev.dependencies]
