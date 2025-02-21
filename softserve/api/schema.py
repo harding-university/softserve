@@ -4,13 +4,23 @@ from pydantic import BaseModel
 
 
 class AIvAIPlayState(BaseModel):
+    event: str
+    player: str
+
+
+class AIvAIPlayStateResponse(BaseModel):
     state: str
-    uuid: str
+    aid: int
 
 
 class AIvAISubmitAction(BaseModel):
     action: str
-    uuid: str
+    player: str
+    aid: str
+
+
+class AIvAISubmitActionResponse(BaseModel):
+    winner: str
 
 
 class EngineResponse(BaseModel):

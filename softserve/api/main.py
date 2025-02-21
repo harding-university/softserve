@@ -1,5 +1,9 @@
+import django
 from fastapi import FastAPI, HTTPException, Path
 from pydantic import BaseModel
+
+# We have to call this before our submodules can import Django models
+django.setup()
 
 from .routers import aivai, state
 from .util import engine, get_actions

@@ -3,6 +3,10 @@ from os import environ
 from subprocess import run
 
 
+class SoftserveException(Exception):
+    pass
+
+
 ENGINE = environ.get("ENGINE")
 if not ENGINE:
     raise SoftserveException("No engine defined!")

@@ -1,7 +1,11 @@
 from random import choice
 
+import django
 import pytest
 from fastapi.testclient import TestClient
+
+# We have to call this before our submodules can import Django models
+django.setup()
 
 from .main import app
 

@@ -1,0 +1,2 @@
+class SoftserveException(Exception):
+    pass
