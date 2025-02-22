@@ -1,16 +1,17 @@
 from random import choice
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from fastapi.testclient import TestClient
 
 from .api.main import app
+from .models import *
 
 
 # When to abandon a random walk test
 WALK_BACKOUT_DEPTH = 50
 
 
-class APITestCase(TestCase):
+class APITestCase(TransactionTestCase):
     def setUp(self):
         self.client = TestClient(app)
 
@@ -69,7 +70,7 @@ class APITestCase(TestCase):
         )
         self.assertEqual(r.status_code, 200)
 
-        # Confirm uuid no longer exists
+        # Confirm we can't post the action a second time
         r = self.client.post(
             "/aivai/submit-action",
             json={"player": "test", "action": action, "action_id": action_id},
@@ -77,6 +78,42 @@ class APITestCase(TestCase):
         self.assertEqual(r.status_code, 401)
 
     def test_mirror_game(self):
+        winner = "none"
+        for _ in range(WALK_BACKOUT_DEPTH):
+            r = self.client.post(
+                "/aivai/play-state",
+                json={
+                    "event": "mirror",
+                    "player": "test",
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+
+            state = r.json()["state"]
+            action_id = r.json()["action_id"]
+
+            action = choice(list(self.get_actions(state)))
+            r = self.client.post(
+                "/aivai/submit-action",
+                json={
+                    "player": "test",
+                    "action_id": action_id,
+                    "action": action,
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+
+            winner = r.json()["winner"]
+            if winner != "none":
+                break
+
+        # Make sure the game actually ended (else we hit the backout depth)
+        self.assertNotEqual(winner, "none")
+
+        # Make sure we only played one game
+        self.assertEqual(Game.objects.count(), 1)
+
+        # And this should start a new game
         r = self.client.post(
             "/aivai/play-state",
             json={
@@ -84,5 +121,5 @@ class APITestCase(TestCase):
                 "player": "test",
             },
         )
-        
-        # TODO
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Game.objects.count(), 2)

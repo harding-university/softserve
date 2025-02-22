@@ -107,13 +107,15 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
     stdout, _ = engine("-W", action.after_state)
     winner = stdout.strip()
     if winner in ["h", "t", "draw"]:
+        game = action.game
         game.end_timestamp = now
+        game.save()
         if winner == "h":
-            gameplayer = game.gameplayer_set.get(number=1)
+            gameplayer = game.gameplayer_set.get(number=0)
             gameplayer.winner = True
             gameplayer.save()
         if winner == "t":
-            gameplayer = game.gameplayer_set.get(number=2)
+            gameplayer = game.gameplayer_set.get(number=1)
             gameplayer.winner = True
             gameplayer.save()
 
