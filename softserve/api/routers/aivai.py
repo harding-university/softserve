@@ -22,9 +22,22 @@ router = APIRouter(prefix="/aivai", tags=["aivai"])
     response_model=AIvAIPlayStateResponse,
     summary="Request a state to play",
     description="""
-Call this to get a state for which you'll calculate an action. You'll
-get a state and a uuid. Submit the resulting action, along with the
-uuid, to `/aivai/submit-action`.
+Call this to get a state for which you'll calculate an action.
+
+Your POST must contain a JSON object with two fields:
+- `event`: the name of the event you are playing
+- `player`: an identifier for your client
+
+Right now, the only event is `mirror`. In this event, your client will
+play games against itself--the output from one `/aivai/submit-action`
+will become the next `/aivai/play-state`, with new games being started
+as necessary.
+
+At the moment, `player` can be any arbitrary string. Authentication will
+soon be implemented.
+
+You'll get a state and a action_id. Submit the resulting action, along
+with the action_id, to `/aivai/submit-action`.
 
 The state is independent and may be completely unrelated to states given
 in previous and subsequent calls.
@@ -64,6 +77,9 @@ The submitted action will be checked for validity, with HTTP 422 being
 returned for invalid actions. If you believe an action is being
 improperly validated, [open an
 issue](https://github.com/harding-university/softserve/issues).
+
+The response is a JSON object with the following field:
+- `winner`: `none` if the post-action game is ongoing, else `h`, `t`, or `draw`
 """,
 )
 def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
