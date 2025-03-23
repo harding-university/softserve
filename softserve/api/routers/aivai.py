@@ -113,14 +113,16 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
         raise HTTPException(status_code=422, detail="invalid action")
 
     # Update action
-    stdout, _ = engine("-a", req.action, state)
+    # Pass action using = syntax, since an action starting with a
+    # negative number confuses argparse (it looks like a flag)
+    stdout, _ = engine(f"/a", req.action, state)
     action.notation = req.action
     action.after_state = stdout.strip()
     action.submit_timestamp = now
     action.save()
 
     # Check if state is terminal
-    stdout, _ = engine("-W", action.after_state)
+    stdout, _ = engine("/W", action.after_state)
     winner = stdout.strip()
     if winner in ["h", "t", "draw"]:
         game = action.game

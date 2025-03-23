@@ -20,7 +20,7 @@ Returns a serialized representation of the initial game state.
 """,
 )
 async def state_initial() -> StateInitialResponse:
-    stdout, stderr = engine("-I")
+    stdout, stderr = engine("/I")
     return StateInitialResponse(state=stdout.strip(), log=stderr)
 
 
@@ -60,7 +60,7 @@ async def state_act(
     if action not in actions:
         raise HTTPException(status_code=422, detail="invalid action")
 
-    stdout, stderr = engine("-a", action, state)
+    stdout, stderr = engine("/a", action, state)
     return StateActResponse(state=stdout.strip(), log=stderr)
 
 
@@ -80,5 +80,5 @@ issue](https://github.com/harding-university/softserve/issues).
 """,
 )
 async def state_winner(state: str = Path(pattern=STATE_REGEX)) -> StateWinnerResponse:
-    stdout, stderr = engine("-W", state)
+    stdout, stderr = engine("/W", state)
     return StateWinnerResponse(winner=stdout.strip(), log=stderr)
