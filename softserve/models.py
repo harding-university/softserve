@@ -5,7 +5,7 @@ from .exceptions import SoftserveException
 
 class Action(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
-    player = models.ForeignKey("GamePlayer", on_delete=models.PROTECT)
+    player = models.ForeignKey("GamePlayer", on_delete=models.CASCADE)
 
     number = models.IntegerField()
 
@@ -47,7 +47,7 @@ class GameManager(models.Manager):
 
 
 class Game(models.Model):
-    event = models.ForeignKey("Event", on_delete=models.PROTECT)
+    event = models.ForeignKey("Event", on_delete=models.CASCADE)
     players = models.ManyToManyField("Player", through="GamePlayer")
 
     initial_state = models.TextField(default="h")
@@ -103,7 +103,7 @@ class Game(models.Model):
 
 class GamePlayer(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
-    player = models.ForeignKey("Player", on_delete=models.PROTECT)
+    player = models.ForeignKey("Player", on_delete=models.CASCADE)
 
     number = models.IntegerField()
     winner = models.BooleanField(default=False)
