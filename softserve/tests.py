@@ -15,6 +15,8 @@ class APITestCase(TransactionTestCase):
     def setUp(self):
         self.client = TestClient(app)
 
+        self.player = Player.objects.create(name="test")
+
     def get_initial_state(self):
         r = self.client.get("/state/initial")
         return r.json()["state"]
@@ -49,7 +51,8 @@ class APITestCase(TransactionTestCase):
             "/aivai/play-state",
             json={
                 "event": "mirror",
-                "player": "test",
+                "player": self.player.name,
+                "token": self.player.token,
             },
         )
         self.assertEqual(r.status_code, 200)
@@ -66,14 +69,24 @@ class APITestCase(TransactionTestCase):
         action = choice(list(self.get_actions(state)))
         r = self.client.post(
             "/aivai/submit-action",
-            json={"player": "test", "action": action, "action_id": action_id},
+            json={
+                "player": self.player.name,
+                "token": self.player.token,
+                "action": action,
+                "action_id": action_id,
+            },
         )
         self.assertEqual(r.status_code, 200)
 
         # Confirm we can't post the action a second time
         r = self.client.post(
             "/aivai/submit-action",
-            json={"player": "test", "action": action, "action_id": action_id},
+            json={
+                "player": self.player.name,
+                "token": self.player.token,
+                "action": action,
+                "action_id": action_id,
+            },
         )
         self.assertEqual(r.status_code, 401)
 
@@ -84,7 +97,8 @@ class APITestCase(TransactionTestCase):
                 "/aivai/play-state",
                 json={
                     "event": "mirror",
-                    "player": "test",
+                    "player": self.player.name,
+                    "token": self.player.token,
                 },
             )
             self.assertEqual(r.status_code, 200)
@@ -96,7 +110,8 @@ class APITestCase(TransactionTestCase):
             r = self.client.post(
                 "/aivai/submit-action",
                 json={
-                    "player": "test",
+                    "player": self.player.name,
+                    "token": self.player.token,
                     "action_id": action_id,
                     "action": action,
                 },
@@ -118,8 +133,20 @@ class APITestCase(TransactionTestCase):
             "/aivai/play-state",
             json={
                 "event": "mirror",
-                "player": "test",
+                "player": self.player.name,
+                "token": self.player.token,
             },
         )
         self.assertEqual(r.status_code, 200)
         self.assertEqual(Game.objects.count(), 2)
+
+    def test_invalid_token(self):
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "mirror",
+                "player": self.player.name,
+                "token": self.player.token + "1",
+            },
+        )
+        self.assertEqual(r.status_code, 403)

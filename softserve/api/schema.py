@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class AIvAIPlayState(BaseModel):
     event: str
     player: str
+    token: str
 
 
 class AIvAIPlayStateResponse(BaseModel):
@@ -16,6 +17,7 @@ class AIvAIPlayStateResponse(BaseModel):
 class AIvAISubmitAction(BaseModel):
     action: str
     player: str
+    token: str
     action_id: int
 
 

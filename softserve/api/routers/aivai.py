@@ -44,6 +44,11 @@ in previous and subsequent calls.
 """,
 )
 def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
+    # Get player
+    player, _ = Player.objects.get_or_create(name=req.player)
+    if player.token != req.token:
+        raise HTTPException(status_code=403, detail="invalid token for player")
+
     # Get event
     if req.event in AUTO_CREATE_EVENTS:
         event, _ = Event.objects.get_or_create(name=req.event)
@@ -52,10 +57,6 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
             event = Event.objects.get(name=req.event)
         except Event.DoesNotExist:
             raise HTTPException(status_code=404, detail="event not found")
-
-    # Get player
-    # TODO add authentication
-    player, _ = Player.objects.get_or_create(name=req.player)
 
     # Find a game in the event for the player
     game = Game.objects.find_for(event, player)
@@ -91,14 +92,16 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
     except Player.DoesNotExist:
         raise HTTPException(status_code=404, detail="player not found")
 
+    # Check auth
+    if player.token != req.token:
+        raise HTTPException(status_code=403, detail="invalid token for player")
+
     # Get action
     try:
         action = Action.objects.get(pk=req.action_id)
     except Action.DoesNotExist:
         raise HTTPException(status_code=404, detail="action_id not found")
 
-    # Check auth
-    # TODO do actual auth
     if action.player.player != player:
         raise HTTPException(status_code=401, detail="player-action_id mismatch")
 
