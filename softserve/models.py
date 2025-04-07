@@ -1,3 +1,5 @@
+import secrets
+
 from django.db import models
 
 from .exceptions import SoftserveException
@@ -112,8 +114,19 @@ class GamePlayer(models.Model):
         return f"{self.player.name} P{self.number + 1} in {self.game}"
 
 
+def generate_token():
+    return secrets.token_urlsafe()
+
+
 class Player(models.Model):
     name = models.TextField()
+    token = models.TextField(blank=True)
+
+    def save(self, **kwargs):
+        if self.token == "":
+            self.token = generate_token()
+
+        super().save(**kwargs)
 
     def __str__(self):
         return self.name
