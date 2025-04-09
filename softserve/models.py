@@ -119,7 +119,7 @@ def generate_token():
 
 
 class Player(models.Model):
-    name = models.TextField()
+    name = models.TextField(unique=True)
     token = models.TextField(blank=True)
 
     def save(self, **kwargs):
