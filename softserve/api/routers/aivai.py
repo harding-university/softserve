@@ -59,7 +59,7 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
             raise HTTPException(status_code=404, detail="event not found")
 
     # Find a game in the event for the player
-    game = Game.objects.find_for(event, player)
+    game = event.find_game_for(player)
 
     # Create a pending action on the game
     action = game.next_action()

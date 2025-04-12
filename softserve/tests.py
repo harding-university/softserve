@@ -1,4 +1,5 @@
 from random import choice
+from datetime import datetime
 
 from django.test import TestCase, TransactionTestCase
 from fastapi.testclient import TestClient
@@ -150,3 +151,74 @@ class APITestCase(TransactionTestCase):
             },
         )
         self.assertEqual(r.status_code, 403)
+
+
+class ModelTestCase(TransactionTestCase):
+    def setUp(self):
+        self.p1 = Player.objects.create(name="player 1")
+        self.p2 = Player.objects.create(name="player 2")
+        self.p3 = Player.objects.create(name="player 3")
+
+        self.e1 = Event.objects.create(name="event 1")
+        self.e2 = Event.objects.create(name="event 2")
+
+        self.g1 = Game.objects.create(event=self.e1)
+        self.g1.add_player(self.p1)
+        self.g1.add_player(self.p2)
+
+        self.g2 = Game.objects.create(event=self.e1)
+        self.g2.add_player(self.p1)
+        self.g2.add_player(self.p3)
+
+    def test_find_game_for(self):
+        self.assertIsNone(self.e1.find_game_for(self.p3))
+
+        game = self.e1.find_game_for(self.p1)
+        self.assertEqual(game, self.e1.find_game_for(self.p1))
+
+        # p2 shouldn't have games
+        # self.assertEqual(None, self.e1.find_game_for(self.p2))
+
+        action = game.next_action()
+        # We haven't submitted an action yet, so we should get the same game
+        self.assertEqual(game, self.e1.find_game_for(self.p1))
+
+        # Test this while we're here
+        self.assertEqual(action, game.next_action())
+
+        # Make a move
+        action.notation = "1,-2|1,-1|0,-1|0,0"
+        action.after_state = "1,-2|1,-1|0,-1|0,0|t"
+        action.submit_timestamp = datetime.now()
+        action.save()
+
+        # We should get a different game now
+        old_game = game
+        game = self.e1.find_game_for(self.p1)
+        self.assertNotEqual(game, old_game)
+
+        # And a different action
+        self.assertNotEqual(action, game.next_action())
+
+        # Make a move in the other game
+        action = game.next_action()
+        action.notation = "1,-2|1,-1|0,-1|0,0"
+        action.after_state = "1,-2|1,-1|0,-1|0,0|t"
+        action.submit_timestamp = datetime.now()
+        action.save()
+
+        # And p1 shouldn't have any games left
+        self.assertEqual(None, self.e1.find_game_for(self.p1))
+
+        # Make p2 move
+        game = self.e1.find_game_for(self.p2)
+        self.assertEqual(game, self.g1)
+        action = game.next_action()
+        self.assertEqual(action.number, 2)
+        action.notation = "1,-2|1,-1|0,-1|0,0"
+        action.after_state = "1,-2|1,-1|0,-1|0,0|h"
+        action.submit_timestamp = datetime.now()
+        action.save()
+
+        # And p1 should have a name now
+        self.assertNotEqual(None, self.e1.find_game_for(self.p1))

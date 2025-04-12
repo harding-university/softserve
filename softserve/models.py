@@ -26,26 +26,30 @@ class Action(models.Model):
 class Event(models.Model):
     name = models.TextField()
 
-    def __str__(self):
-        return self.name
-
-
-class GameManager(models.Manager):
-    def find_for(self, event, player):
-        if event.name == "mirror":
+    def find_game_for(self, player):
+        if self.name == "mirror":
             game_player = GamePlayer.objects.filter(
-                player=player, game__event=event, game__end_timestamp=None
+                player=player, game__event=self, game__end_timestamp=None
             ).first()
             if game_player:
                 game = game_player.game
             else:
-                game = self.create(event=event)
+                game = Game.objects.create(event=self)
                 game.add_player(player)
                 game.add_player(player)
 
-        # TODO handle non-mirror events
+            return game
 
-        return game
+        for game_player in GamePlayer.objects.filter(
+            player=player, game__event=self, game__end_timestamp=None
+        ):
+            if game_player.game.turn == game_player.number:
+                return game_player.game
+
+        return None
+
+    def __str__(self):
+        return self.name
 
 
 class Game(models.Model):
@@ -56,8 +60,6 @@ class Game(models.Model):
 
     start_timestamp = models.DateTimeField(auto_now_add=True)
     end_timestamp = models.DateTimeField(blank=True, null=True)
-
-    objects = GameManager()
 
     @property
     def turn(self):
@@ -76,6 +78,7 @@ class Game(models.Model):
             raise SoftserveException("Game is full")
         GamePlayer.objects.create(game=self, player=player, number=self.players.count())
 
+    # Create (if necessary) and return an Action for the next action in the state
     def next_action(self):
         turn_player = self.gameplayer_set.get(number=self.turn)
 
