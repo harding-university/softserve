@@ -61,6 +61,9 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     # Find a game in the event for the player
     game = event.find_game_for(player)
 
+    if game == None:
+        raise HTTPException(status_code=204, detail="no games waiting; please try again")
+
     # Create a pending action on the game
     action = game.next_action()
 
