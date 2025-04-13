@@ -27,14 +27,11 @@ Call this to get a state for which you'll calculate an action.
 Your POST must contain a JSON object with two fields:
 - `event`: the name of the event you are playing
 - `player`: an identifier for your client
+- `token`: your authentication token
 
-Right now, the only event is `mirror`. In this event, your client will
-play games against itself--the output from one `/aivai/submit-action`
-will become the next `/aivai/play-state`, with new games being started
-as necessary.
-
-At the moment, `player` can be any arbitrary string. Authentication will
-soon be implemented.
+If the event is `mirror`, your client will play games against itself--the
+output from one `/aivai/submit-action` will become the next
+`/aivai/play-state`, with new games being started as necessary.
 
 You'll get a state and a action_id. Submit the resulting action, along
 with the action_id, to `/aivai/submit-action`.
