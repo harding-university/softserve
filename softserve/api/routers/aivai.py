@@ -41,11 +41,11 @@ with the action_id, to `/aivai/submit-action`.
 
 The state is independent and may be completely unrelated to states given
 in previous and subsequent calls.
-""",
+"""
 )
 def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     # Get player
-    player, _ = Player.objects.get_or_create(name=req.player)
+    player = Player.objects.get(name=req.player)
     if player.token != req.token:
         raise HTTPException(status_code=403, detail="invalid token for player")
 
