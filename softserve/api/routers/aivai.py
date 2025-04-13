@@ -41,7 +41,7 @@ with the action_id, to `/aivai/submit-action`.
 
 The state is independent and may be completely unrelated to states given
 in previous and subsequent calls.
-"""
+""",
 )
 def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     # Get player
@@ -62,7 +62,9 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     game = event.find_game_for(player)
 
     if game == None:
-        raise HTTPException(status_code=204, detail="no games waiting; please try again")
+        raise HTTPException(
+            status_code=204, detail="no games waiting; please try again"
+        )
 
     # Create a pending action on the game
     action = game.next_action()

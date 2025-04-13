@@ -1,10 +1,12 @@
 from random import choice
 from datetime import datetime
 
+from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
 from fastapi.testclient import TestClient
 
 from .api.main import app
+from .api.util import engine, get_actions
 from .models import *
 
 
@@ -15,7 +17,6 @@ WALK_BACKOUT_DEPTH = 50
 class APITestCase(TransactionTestCase):
     def setUp(self):
         self.client = TestClient(app)
-
         self.player = Player.objects.create(name="test")
 
     def get_initial_state(self):
@@ -222,3 +223,10 @@ class ModelTestCase(TransactionTestCase):
 
         # And p1 should have a name now
         self.assertNotEqual(None, self.e1.find_game_for(self.p1))
+
+    def test_createevent(self):
+        call_command(
+            "createevent", "command event", [self.p1, self.p2, self.p3], games=5
+        )
+        event = Event.objects.get(name="command event")
+        self.assertEqual(event.game_set.count(), (3 * 2 / 2) * (5 * 2))

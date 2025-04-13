@@ -26,6 +26,12 @@ class Action(models.Model):
 class Event(models.Model):
     name = models.TextField()
 
+    def add_game(self, p1, p2):
+        game = Game.objects.create(event=self)
+        game.add_player(p1)
+        game.add_player(p2)
+        return game
+
     def find_game_for(self, player):
         if self.name == "mirror":
             game_player = GamePlayer.objects.filter(
@@ -101,9 +107,12 @@ class Game(models.Model):
         )
 
     def __str__(self):
-        p1 = self.players.first()
-        p2 = self.players.last()
-        return f"#{self.id} {self.event}: {p1} vs. {p2}"
+        try:
+            p1 = self.gameplayer_set.get(number=0).player
+            p2 = self.gameplayer_set.get(number=1).player
+            return f"#{self.id} {self.event}: {p1} vs. {p2}"
+        except GamePlayer.DoesNotExist:
+            return f"#{self.id} {self.event}: awaiting matchup"
 
 
 class GamePlayer(models.Model):
