@@ -18,9 +18,12 @@ def event_dashboard(request, name):
         else:
             finished_games.append(game)
 
-    average_game_depth = sum([game.depth for game in finished_games]) / len(
-        finished_games
-    )
+    if finished_games:
+        average_game_depth = sum([game.depth for game in finished_games]) / len(
+            finished_games
+        )
+    else:
+        average_game_depth = "n/a"
 
     players = sorted(
         set(
