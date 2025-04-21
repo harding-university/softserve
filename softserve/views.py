@@ -74,7 +74,7 @@ def event_dashboard(request, name):
         row.append(sum(wins.values()) / losses if losses else "inf")
         row.append(draws)
         row.append(forfeits)
-        row.append(sum(wins.values()) * 3 + draws * 1)
+        row.append(sum(wins.values()) * 2 + draws * 1)
 
         table_rows.append(row)
 
