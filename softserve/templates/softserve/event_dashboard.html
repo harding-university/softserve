@@ -24,13 +24,21 @@
                     <td><b>forfeits</b></td>
                     <td><b>score</b></td>
                     {% for player in players %}
-                        <td>{{ player.name }}</td>
+                        {% if redact %}
+                            <td>redacted</td>
+                        {% else %}
+                            <td>{{ player.name }}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             </thead>
             {% for name, matchups, wins, losses, wl, draws, forfeits, score in table_rows %}
                 <tr>
-                    <td>{{ name }}</td>
+                    {% if redact %}
+                        <td>redacted</td>
+                    {% else %}
+                        <td>{{ name }}</td>
+                    {% endif %}
                     <td><b>{{ wl|floatformat:2 }}</b></td>
                     <td><b>{{ wins }}</b></td>
                     <td><b>{{ losses }}</b></td>

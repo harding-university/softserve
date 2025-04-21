@@ -78,4 +78,6 @@ def event_dashboard(request, name):
 
         table_rows.append(row)
 
+    redact = request.GET.get("redact")
+
     return render(request, "softserve/event_dashboard.html", locals())
