@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+        <style>
+            td {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>{{ event.name }}</h1>
+        <p>{{ games.count }} games ({{ open_games|length }} remaining)</p>
+        <p>average game depth: {{ average_game_depth|floatformat:2 }}</p>
+
+        <h2>matchups</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <td></td>
+                    <td><b>w/l</b></td>
+                    <td><b>wins</b></td>
+                    <td><b>losses</b></td>
+                    <td><b>draws</b></td>
+                    <td><b>forfeits</b></td>
+                    <td><b>score</b></td>
+                    {% for player in players %}
+                        <td>{{ player.name }}</td>
+                    {% endfor %}
+                </tr>
+            </thead>
+            {% for name, matchups, wins, losses, wl, draws, forfeits, score in table_rows %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td><b>{{ wl|floatformat:2 }}</b></td>
+                    <td><b>{{ wins }}</b></td>
+                    <td><b>{{ losses }}</b></td>
+                    <td><b>{{ draws }}</b></td>
+                    <td><b>{{ forfeits }}</b></td>
+                    <td><b>{{ score }}</b></td>
+                    {% for count in matchups %}
+                        <td>{{ count }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
+

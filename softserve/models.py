@@ -1,5 +1,6 @@
 import secrets
 
+from django.conf import settings
 from django.db import models
 
 from .exceptions import SoftserveException
@@ -18,6 +19,12 @@ class Action(models.Model):
 
     create_timestamp = models.DateTimeField(auto_now_add=True)
     submit_timestamp = models.DateTimeField(blank=True, null=True)
+
+    @property
+    def think_time(self):
+        if not self.submit_timestamp:
+            return None
+        return self.submit_timestamp - self.create_timestamp
 
     def __str__(self):
         return f"{self.game} action {self.number} ({self.player.player.name})"
@@ -79,6 +86,21 @@ class Game(models.Model):
             state = self.initial_state
         return 0 if state.endswith("h") else 1
 
+    @property
+    def duration(self):
+        return self.end_timestamp - self.start_timestamp
+
+    @property
+    def depth(self):
+        return self.action_set.order_by("-number").first().number + 1
+
+    @property
+    def forfeit(self):
+        for action in self.action_set.order_by("number"):
+            if action.think_time > settings.SOFTSERVE_THINK_TIME:
+                return action.player.player
+        return None
+
     def add_player(self, player):
         if self.players.count() >= 2:
             raise SoftserveException("Game is full")
@@ -121,6 +143,12 @@ class GamePlayer(models.Model):
 
     number = models.IntegerField()
     winner = models.BooleanField(default=False)
+
+    @property
+    def opponent(self):
+        for gp in self.game.gameplayer_set.all():
+            if gp != self:
+                return gp
 
     def __str__(self):
         return f"{self.player.name} P{self.number + 1} in {self.game}"
