@@ -1,9 +1,9 @@
 api:
-	poetry run fastapi run softserve/api/main.py
+	DJANGO_SETTINGS_MODULE=project.settings poetry run fastapi run softserve/api/main.py
 
 
 dev:
-	poetry run fastapi dev softserve/api/main.py
+	DJANGO_SETTINGS_MODULE=project.settings poetry run fastapi dev softserve/api/main.py
 
 
 django:
