@@ -9,9 +9,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = {extras = ["standard"], version = ">=0.115.0,<0.116.0"}
-django = "^5.1.6"
-psycopg = {extras = ["binary"], version = "^3.2.4"}
+fastapi = {extras = ["standard"], version = ">=0.122.0,<0.123.0"}
+django = "^5.2.8"
 
 
 [tool.poetry.group.dev.dependencies]
