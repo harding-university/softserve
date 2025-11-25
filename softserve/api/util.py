@@ -23,7 +23,7 @@ def engine(*args) -> (str, str):
 
 
 def get_actions(state: str) -> (list[str], str):
-    stdout, stderr = engine("/l", state)
+    stdout, stderr = engine("-l", state)
 
     if stdout.strip() == "terminal state":
         return ([], stderr)
