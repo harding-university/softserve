@@ -8,7 +8,7 @@ class SoftserveException(Exception):
     pass
 
 
-ENGINE = environ.get("ENGINE")
+ENGINE = environ.get("SOFTSERVE_ENGINE")
 if not ENGINE:
     raise SoftserveException("No engine defined!")
 

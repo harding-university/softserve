@@ -1,5 +1,8 @@
+from os import environ
+
 import django
 from fastapi import FastAPI, HTTPException, Path
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # We have to call this before our submodules can import Django models
@@ -68,3 +71,7 @@ output from the underlying game engine.
 
 app.include_router(aivai.router)
 app.include_router(state.router)
+
+ui = environ.get("SOFTSERVE_UI")
+if ui:
+    app.mount("/", StaticFiles(directory=ui, html=True))
