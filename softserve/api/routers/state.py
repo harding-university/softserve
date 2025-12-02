@@ -1,11 +1,15 @@
-from fastapi import APIRouter, HTTPException, Path
+from os import environ
+from typing import Annotated
+
+from fastapi import APIRouter, Header, HTTPException, Path
 
 from ..schema import *
 from ..util import engine, get_actions
 
 
-STATE_REGEX = r"(\d?\d,\d?\d\|){0,32}(\d?\d,\d?\d[ht]\d?\d|){0,32}[ht]"
-# TODO action regex
+STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
+if not STATE_REGEX:
+    raise SoftserveException("No state regex defined!")
 
 
 router = APIRouter(prefix="/state", tags=["state"])
@@ -103,5 +107,5 @@ issue](https://github.com/harding-university/softserve/issues).
 """,
 )
 async def state_winner(state: str = Path(pattern=STATE_REGEX)) -> StateWinnerResponse:
-    stdout, stderr = engine("/W", state)
+    stdout, stderr = engine("-W", state)
     return StateWinnerResponse(winner=stdout.strip(), log=stderr)
