@@ -61,7 +61,30 @@ async def state_act(
         raise HTTPException(status_code=422, detail="invalid action")
 
     stdout, stderr = engine("-a", action, state)
-    return StateActResponse(state=stdout.strip(), log=stderr)
+    after = stdout.strip()
+    actions, _ = get_actions(after)
+    return StateActResponse(state=after, actions=actions, log=stderr)
+
+
+@router.get("/{state}/think", response_model=StateThinkResponse)
+async def state_think(
+    state: str = Path(pattern=STATE_REGEX),
+    workers: Annotated[str | None, Header()] = None,
+    iterations: Annotated[str | None, Header()] = None,
+) -> StateThinkResponse:
+
+    if workers:
+        workers = min(int(workers), MAX_WORKERS)
+        workers = max(workers, MIN_WORKERS)
+
+    if iterations:
+        iterations = min(int(iterations), MAX_ITERATIONS)
+        iterations = max(iterations, MIN_ITERATIONS)
+
+    action, stderr = engine(f"-t", state)
+    after, _ = engine("-a", action, state)
+    actions, _ = get_actions(after)
+    return StateThinkResponse(action=action, state=after, actions=actions, log=stderr)
 
 
 @router.get(
@@ -71,8 +94,8 @@ async def state_act(
     description="""
 Returns one of the following, describing the winner of the current state:
 - `none` (ongoing game)
-- `h`
-- `t`
+- `x`
+- `o`
 - `draw`
 
 If you believe the determination is incorrect, [open an

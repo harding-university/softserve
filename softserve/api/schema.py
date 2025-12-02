@@ -37,7 +37,12 @@ class StateActionsResponse(EngineResponse):
     actions: List[str]
 
 
-class StateActResponse(EngineResponse):
+class StateActResponse(StateActionsResponse):
+    state: str
+
+
+class StateThinkResponse(StateActionsResponse):
+    action: str
     state: str
 
 

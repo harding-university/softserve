@@ -19,7 +19,7 @@ def engine(*args) -> (str, str):
     if p.returncode:
         raise HTTPException(status_code=422, detail=p.stderr)
 
-    return p.stdout, p.stderr
+    return p.stdout.strip(), p.stderr.strip()
 
 
 def get_actions(state: str) -> (list[str], str):
