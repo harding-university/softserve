@@ -2,6 +2,8 @@ from datetime import timedelta
 from os import environ
 from pathlib import Path
 
+from softserve.api.util import get_initial_state
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -112,3 +114,4 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SOFTSERVE_THINK_TIME = timedelta(seconds=4.3)
+SOFTSERVE_INIITAL_STATE = get_initial_state()[0]

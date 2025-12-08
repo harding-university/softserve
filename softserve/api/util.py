@@ -29,3 +29,8 @@ def get_actions(state: str) -> (list[str], str):
         return ([], stderr)
 
     return (stdout.strip().split("\n"), stderr)
+
+
+def get_initial_state() -> str:
+    stdout, stderr = engine("-I")
+    return stdout.strip(), stderr
