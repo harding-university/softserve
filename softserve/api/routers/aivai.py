@@ -3,6 +3,7 @@ from random import choice, randrange
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
+from django.contrib.auth import authenticate
 
 from ...models import Action, Event, Game, Player
 from ..schema import *
@@ -41,10 +42,10 @@ in previous and subsequent calls.
 """,
 )
 def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
-    # Get player
-    player = Player.objects.get(name=req.player)
-    if player.token != req.token:
-        raise HTTPException(status_code=403, detail="invalid token for player")
+    # Get user
+    user = authenticate(username=req.player, password=req.token)
+    if not user:
+        raise HTTPException(status_code=403, detail="invalid credentials")
 
     # Get event
     if req.event in AUTO_CREATE_EVENTS:
@@ -56,7 +57,7 @@ def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
             raise HTTPException(status_code=404, detail="event not found")
 
     # Find a game in the event for the player
-    game = event.find_game_for(player)
+    game = event.find_game_for(user)
 
     if game == None:
         raise HTTPException(
@@ -86,17 +87,13 @@ The response is a JSON object with the following field:
 """,
 )
 def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
+    # Grab the submit timestamp right away
     now = datetime.now()
 
-    # Get player
-    try:
-        player = Player.objects.get(name=req.player)
-    except Player.DoesNotExist:
-        raise HTTPException(status_code=404, detail="player not found")
-
-    # Check auth
-    if player.token != req.token:
-        raise HTTPException(status_code=403, detail="invalid token for player")
+    # Get user
+    user = authenticate(username=req.player, password=req.token)
+    if not user:
+        raise HTTPException(status_code=403, detail="invalid credentials")
 
     # Get action
     try:
@@ -104,7 +101,7 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
     except Action.DoesNotExist:
         raise HTTPException(status_code=404, detail="action_id not found")
 
-    if action.player.player != player:
+    if action.player.user != user:
         raise HTTPException(status_code=401, detail="player-action_id mismatch")
 
     # Ensure action hasn't been already submitted

@@ -1,22 +1,27 @@
-import secrets
-
 from django.conf import settings
+from django.contrib.auth.admin import UserAdmin
 from django.db import models
 
 from .exceptions import SoftserveException
 
 
 class Action(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
-    player = models.ForeignKey("GamePlayer", on_delete=models.CASCADE)
+    """A single, discrete action taken by a player during a game"""
 
+    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    player = models.ForeignKey("Player", on_delete=models.CASCADE)
+
+    # Sequence number in game
     number = models.IntegerField()
 
+    # State before the action
     before_state = models.TextField()
-
+    # Notation for the action itself
     notation = models.TextField(blank=True)
+    # State after the action
     after_state = models.TextField(blank=True)
 
+    # Create and submit times are tracked separately, to determine think time
     create_timestamp = models.DateTimeField(auto_now_add=True)
     submit_timestamp = models.DateTimeField(blank=True, null=True)
 
@@ -27,7 +32,7 @@ class Action(models.Model):
         return self.submit_timestamp - self.create_timestamp
 
     def __str__(self):
-        return f"{self.game} action {self.number} ({self.player.player.name})"
+        return f"{self.game} action {self.number} ({self.user.username})"
 
 
 class Event(models.Model):
@@ -39,25 +44,25 @@ class Event(models.Model):
         game.add_player(p2)
         return game
 
-    def find_game_for(self, player):
+    def find_game_for(self, user):
         if self.name == "mirror":
-            game_player = GamePlayer.objects.filter(
-                player=player, game__event=self, game__end_timestamp=None
+            player = Player.objects.filter(
+                user=user, game__event=self, game__end_timestamp=None
             ).first()
-            if game_player:
-                game = game_player.game
+            if player:
+                game = player.game
             else:
                 game = Game.objects.create(event=self)
-                game.add_player(player)
-                game.add_player(player)
+                game.add_player(user)
+                game.add_player(user)
 
             return game
 
-        for game_player in GamePlayer.objects.filter(
-            player=player, game__event=self, game__end_timestamp=None
+        for player in Player.objects.filter(
+            user=user, game__event=self, game__end_timestamp=None
         ):
-            if game_player.game.turn == game_player.number:
-                return game_player.game
+            if player.game.turn == player:
+                return player.game
 
         return None
 
@@ -66,25 +71,35 @@ class Event(models.Model):
 
 
 class Game(models.Model):
-    event = models.ForeignKey("Event", on_delete=models.CASCADE)
-    players = models.ManyToManyField("Player", through="GamePlayer")
+    """A matchup between users, each having a player"""
 
-    initial_state = models.TextField(default="h")
+    event = models.ForeignKey("Event", on_delete=models.CASCADE)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, through="Player")
+
+    # NOTE: This is loaded from the external engine binary
+    # Decision pending on whether this is a good idea
+    initial_state = models.TextField(default=settings.SOFTSERVE_INIITAL_STATE)
 
     start_timestamp = models.DateTimeField(auto_now_add=True)
     end_timestamp = models.DateTimeField(blank=True, null=True)
 
     @property
+    def last_action(self):
+        """Get the sequencially highest action (but don't create a new one)"""
+        return self.action_set.order_by("number").last()
+
+    @property
     def turn(self):
-        self.last_action = self.action_set.order_by("number").last()
-        if self.last_action:
-            if self.last_action.submit_timestamp:
-                state = self.last_action.after_state
-            else:
-                state = self.last_action.before_state
-        else:
-            state = self.initial_state
-        return 0 if state.endswith("h") else 1
+        """Get the player whose turn it is to act"""
+        # NOTE: This assumes one action per turn and no skipping players
+        last_action = self.last_action
+
+        if not last_action:
+            return self.player_set.get(number=0)
+
+        if last_action.submit_timestamp:
+            return self.last_action.player.opponent
+        return self.last_action.player
 
     @property
     def duration(self):
@@ -96,77 +111,68 @@ class Game(models.Model):
 
     @property
     def forfeit(self):
+        """Returns the first player to exceed think time, if any"""
         for action in self.action_set.order_by("number"):
             if action.think_time > settings.SOFTSERVE_THINK_TIME:
-                return action.player.player
+                return action.player
         return None
 
-    def add_player(self, player):
-        if self.players.count() >= 2:
-            raise SoftserveException("Game is full")
-        GamePlayer.objects.create(game=self, player=player, number=self.players.count())
+    def add_player(self, user):
+        if self.player_set.count() >= 2:
+            raise SoftserveException(f"{ str(self) } is full")
+        Player.objects.create(game=self, user=user, number=self.player_set.count())
 
-    # Create (if necessary) and return an Action for the next action in the state
     def next_action(self):
-        turn_player = self.gameplayer_set.get(number=self.turn)
+        """Create (if necessary) and return the next action"""
+        last_action = self.last_action
 
-        # TODO the way this is handled can be improved
-        # self.last_action is a side effect of self.turn
-        if self.last_action:
-            if self.last_action.submit_timestamp == None:
-                return self.last_action
-            state = self.last_action.after_state
-            number = self.last_action.number + 1
+        if last_action:
+            # If we've created an action but it hasn't been submitted yet
+            if last_action.submit_timestamp == None:
+                return last_action
+
+            state = last_action.after_state
+            number = last_action.number + 1
         else:
             state = self.initial_state
+            number = 1
             number = 1
 
         return Action.objects.create(
             game=self,
-            player=turn_player,
+            player=self.turn,
             number=number,
             before_state=state,
         )
 
     def __str__(self):
         try:
-            p1 = self.gameplayer_set.get(number=0).player
-            p2 = self.gameplayer_set.get(number=1).player
+            p1 = self.player_set.get(number=0).player
+            p2 = self.player_set.get(number=1).player
             return f"#{self.id} {self.event}: {p1} vs. {p2}"
         except GamePlayer.DoesNotExist:
             return f"#{self.id} {self.event}: awaiting matchup"
 
 
-class GamePlayer(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
-    player = models.ForeignKey("Player", on_delete=models.CASCADE)
+# NOTE: When the user-facing API uses the term player, it referse to a
+# Django user, not this class. This class here is the junction between
+# users and games.
+class Player(models.Model):
+    """A user's role in a game"""
 
+    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    # I.e. first player, second player (zero-indexed)
     number = models.IntegerField()
+    # Did they win this game? (True only if the game is over and they won)
     winner = models.BooleanField(default=False)
 
     @property
     def opponent(self):
-        for gp in self.game.gameplayer_set.all():
-            if gp != self:
-                return gp
+        for player in self.game.player_set.all():
+            if player != self:
+                return player
 
     def __str__(self):
-        return f"{self.player.name} P{self.number + 1} in {self.game}"
-
-
-def generate_token():
-    return secrets.token_urlsafe()
-
-
-class Player(models.Model):
-    name = models.TextField(unique=True)
-    token = models.TextField(blank=True)
-
-    def save(self, **kwargs):
-        if self.token == "":
-            self.token = generate_token()
-
-        super().save(**kwargs)
-
-    def __str__(self):
-        return self.name
+        return f"{self.user.name} P{self.number + 1} in {self.game}"

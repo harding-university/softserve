@@ -1,5 +1,6 @@
 from itertools import combinations
 
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
 from softserve.models import *
@@ -12,7 +13,7 @@ class Command(BaseCommand):
         parser.add_argument("--games", default=5, type=int)
 
     def handle(self, *args, **options):
-        players = [Player.objects.get(name=name) for name in options["players"]]
+        players = [User.objects.get(username=name) for name in options["players"]]
 
         event = Event.objects.create(name=options["name"])
 
