@@ -10,20 +10,24 @@ django:
 	poetry run python manage.py runserver 8001
 
 
-migrations:
-	poetry run python manage.py makemigrations
+format:
+	black softserve
 
 
 migrate:
 	poetry run python manage.py migrate
 
 
+migrations:
+	poetry run python manage.py makemigrations
+
+
+shell:
+	poetry run python manage.py shell
+
+
 test:
 	poetry run python manage.py test
-
-
-format:
-	black softserve
 
 
 # vim: set noexpandtab sts=0 ts=4:
