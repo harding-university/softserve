@@ -4,12 +4,15 @@ from typing import Annotated
 from fastapi import APIRouter, Header, HTTPException, Path
 
 from ..schema import *
-from ..util import engine, get_actions
+from ..util import engine, get_actions, get_initial_state, SoftserveException
 
 
 STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
 if not STATE_REGEX:
     raise SoftserveException("No state regex defined!")
+
+
+ENABLE_THINK = environ.get("SOFTSERVE_ENABLE_THINK", None)
 
 
 router = APIRouter(prefix="/state", tags=["state"])
@@ -24,8 +27,8 @@ Returns a serialized representation of the initial game state.
 """,
 )
 async def state_initial() -> StateInitialResponse:
-    stdout, stderr = engine("-I")
-    return StateInitialResponse(state=stdout.strip(), log=stderr)
+    state, stderr = get_initial_state()
+    return StateInitialResponse(state=state, log=stderr)
 
 
 @router.get(
@@ -70,25 +73,41 @@ async def state_act(
     return StateActResponse(state=after, actions=actions, log=stderr)
 
 
-@router.get("/{state}/think", response_model=StateThinkResponse)
-async def state_think(
-    state: str = Path(pattern=STATE_REGEX),
-    workers: Annotated[str | None, Header()] = None,
-    iterations: Annotated[str | None, Header()] = None,
-) -> StateThinkResponse:
+# The think endpoint is used when playing against the engine (see also
+# SOFTSERVE_UI), but is not used by the class itself and must be
+# specifically enabled.
+if ENABLE_THINK:
 
-    if workers:
-        workers = min(int(workers), MAX_WORKERS)
-        workers = max(workers, MIN_WORKERS)
+    @router.get(
+        "/{state}/think",
+        response_model=StateThinkResponse,
+        summary="Get the engine's action at the given state",
+        description="""
+Calls the engine's think command, which returns the engine's chosen
+action at the given state. Engine-specific headers may control the
+search algorithm; see softserve code and engine documentation.
+""",
+    )
+    async def state_think(
+        state: str = Path(pattern=STATE_REGEX),
+        workers: Annotated[str | None, Header()] = None,
+        iterations: Annotated[str | None, Header()] = None,
+    ) -> StateThinkResponse:
 
-    if iterations:
-        iterations = min(int(iterations), MAX_ITERATIONS)
-        iterations = max(iterations, MIN_ITERATIONS)
+        if workers:
+            workers = min(int(workers), MAX_WORKERS)
+            workers = max(workers, MIN_WORKERS)
 
-    action, stderr = engine(f"-t", state)
-    after, _ = engine("-a", action, state)
-    actions, _ = get_actions(after)
-    return StateThinkResponse(action=action, state=after, actions=actions, log=stderr)
+        if iterations:
+            iterations = min(int(iterations), MAX_ITERATIONS)
+            iterations = max(iterations, MIN_ITERATIONS)
+
+        action, stderr = engine(f"-t", state)
+        after, _ = engine("-a", action, state)
+        actions, _ = get_actions(after)
+        return StateThinkResponse(
+            action=action, state=after, actions=actions, log=stderr
+        )
 
 
 @router.get(

@@ -12,6 +12,10 @@ from .routers import aivai, state
 from .util import engine, get_actions
 
 
+ui = environ.get("SOFTSERVE_UI")
+ui_path = environ.get("SOFTSERVE_UI_PATH", "/")
+
+
 app = FastAPI(
     title="Softserve",
     version="0.1.0a",
@@ -72,6 +76,5 @@ output from the underlying game engine.
 app.include_router(aivai.router)
 app.include_router(state.router)
 
-ui = environ.get("SOFTSERVE_UI")
 if ui:
-    app.mount("/", StaticFiles(directory=ui, html=True))
+    app.mount(ui_path, StaticFiles(directory=ui, html=True))
