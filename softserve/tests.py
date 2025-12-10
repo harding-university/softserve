@@ -14,8 +14,11 @@ from .models import *
 class APITestCase(TransactionTestCase):
     def setUp(self):
         self.client = TestClient(app)
-        self.password = "test"
-        self.user = User.objects.create_user(username="test", password=self.password)
+        self.username = "test"
+        r = self.client.post(
+            "/player/create", json={"name": self.username, "email": "test@example.com"}
+        )
+        self.password = r.json()["token"]
 
     def get_initial_state(self):
         r = self.client.get("/state/initial")
@@ -30,7 +33,7 @@ class APITestCase(TransactionTestCase):
             "/aivai/play-state",
             json={
                 "event": "mirror",
-                "player": self.user.username,
+                "player": self.username,
                 "token": self.password,
             },
         )
@@ -49,7 +52,7 @@ class APITestCase(TransactionTestCase):
         r = self.client.post(
             "/aivai/submit-action",
             json={
-                "player": self.user.username,
+                "player": self.username,
                 "token": self.password,
                 "action": action,
                 "action_id": action_id,
@@ -61,7 +64,7 @@ class APITestCase(TransactionTestCase):
         r = self.client.post(
             "/aivai/submit-action",
             json={
-                "player": self.user.username,
+                "player": self.username,
                 "token": self.password,
                 "action": action,
                 "action_id": action_id,
@@ -74,7 +77,7 @@ class APITestCase(TransactionTestCase):
             "/aivai/play-state",
             json={
                 "event": "mirror",
-                "player": self.user.username,
+                "player": self.username,
                 "token": self.password + "1",
             },
         )

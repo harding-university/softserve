@@ -29,6 +29,15 @@ class EngineResponse(BaseModel):
     log: str
 
 
+class PlayerCreate(BaseModel):
+    name: str
+    email: str
+
+
+class PlayerCreateResponse(BaseModel):
+    token: str
+
+
 class StateInitialResponse(EngineResponse):
     state: str
 
