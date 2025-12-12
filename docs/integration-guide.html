@@ -1,0 +1,149 @@
+<h1 id="softserve-integration-guide">Softserve Integration Guide</h1>
+<p>This guide explains how to integrate your project with the Softserve
+API. This will allow your project to participate in automated AI versus
+AI tournaments. It is required for the official midterm and final
+tournaments.</p>
+<h2 id="background">Background</h2>
+<p>The Softserve web API allows projects to play each other in an
+automated and efficient way. Before Softserve, the class tournaments
+were conducted with manual move input and only invovled a small number
+of games. With Softserve, games are played without any human
+intervention, and tournments involve hundreds of games.</p>
+<p>The Softserve API is available at <a
+href="https://softserve.harding.edu"
+class="uri">https://softserve.harding.edu</a>. Beyond this guide,
+technical documentation is available in two formats:</p>
+<ul>
+<li><a href="https://softserve.harding.edu/docs"
+class="uri">https://softserve.harding.edu/docs</a></li>
+<li><a href="https://softserve.harding.edu/redoc"
+class="uri">https://softserve.harding.edu/redoc</a></li>
+</ul>
+<p>When in conflict, the technical docs supercede this guide.</p>
+<p>The Softserve project is open source and hosted at <a
+href="https://github.com/harding-university/softserve"
+class="uri">https://github.com/harding-university/softserve</a>.
+Students are encouraged to watch the repo and <a
+href="https://github.com/harding-university/softserve/issues/new">create
+issues</a> (which do not have to be bug reports–they can be questions,
+feature requests, or anything else).</p>
+<p>Softserve’s core logic for the semester’s game is handled by an
+external engine, which is left unpublished until the end of the class.
+Technical output from this engine (most notably the version and build
+time) can often be found in the <code>log</code> field of API
+requests.</p>
+<h2 id="state-and-action-notation">State and Action Notation</h2>
+<p>A snapshot of a game at a specific moment in time is called a
+<strong>state</strong>. A discrete move made by a player that takes the
+game from one state to another is called an <strong>action</strong>.</p>
+<p>In order to use the API, your project will need to be able to both
+read and write game states in the notation used by Softserve. It also
+will need to be able to output action notation.</p>
+<p>The state and action notation is specific to the semester’s game, and
+is described in a different document.</p>
+<h3 id="the-state-api">The State API</h3>
+<p>Softserve provides a set of endpoints for browsing states and
+actions. These are useful for checking your understanding of the
+notation and for debugging issues (with your project, or with
+Softserve’s engine).</p>
+<p>For example, <code>/state/initial</code> returns the initial game
+state (i.e. the board set up for a new game), and
+<code>/state/{state}/actions</code> returns a list of actions available
+from a given state.</p>
+<p>See the <a href="https://softserve.harding.edu/docs#/state">API docs
+for the <code>/state</code> endpoints</a> for details.</p>
+<p>The state API is for understanding, testing, and debugging. Projects
+should not rely upon it for core processing, and it is not guaranteed to
+be available during the official tournaments.</p>
+<h3 id="interactive-ui">Interactive UI</h3>
+<p>Softserve also provides an interactive UI for visualizing and
+navigating between states. This can be found at <a
+href="https://softserve.harding.edu/ui"
+class="uri">https://softserve.harding.edu/ui</a>.</p>
+<p>The URL hash shows the current state, and can be set to any
+particular state you would like to visualize. Note that invalid notation
+produces undefined results.</p>
+<h2 id="creating-a-player">Creating a Player</h2>
+<p>Before you can participate in a tournament, you must create a player.
+To do this, post to the <a
+href="https://softserve.harding.edu/docs#/player/player_create_player_create_post"><code>/player/create</code></a>
+endpoint. Your request must contain a JSON object with two fields:</p>
+<ul>
+<li><code>name</code>: The name of the player to create. This is up to
+you, and could be a team name, a code name, or a name for a specific
+version of your project. It must be unique.</li>
+<li><code>email</code>: A contact email for the player, to be used if
+necessary by the Softserve admins.</li>
+</ul>
+<p>Here is an example curl command to create a player:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">curl</span> https://softserve.harding.edu/player/create <span class="at">--json</span> <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;{&quot;name&quot;: &quot;example-player&quot;, &quot;email&quot;: &quot;example@example.com&quot;}&#39;</span></span></code></pre></div>
+<p>The request to <code>/player/create</code> returns a JSON object with
+a <code>token</code> field. This token must be stored, because it is
+used to authenticate the player on all subsequent API calls.</p>
+<p>You can create as many players as you like. When organizing the
+official tournaments, the Softserve admins will request that each team
+submit a specific player name that will be used to idenitfy and
+authenticate their project in the event.</p>
+<h2 id="the-aivai-api">The AIvAI API</h2>
+<p>The core points of interaction between your project and the Softserve
+API are the <a
+href="https://softserve.harding.edu/docs#/aivai"><code>/aivai</code></a>
+endpoints. During a tournament, your project should follow this
+process:</p>
+<ol type="1">
+<li>Request a state to play from <code>/aivai/play-state</code></li>
+<li>(If the server returns HTTP 204, sleep a few seconds and go to step
+1)</li>
+<li>Read the returned state notation</li>
+<li>Calculate an action to take using its AI algorithm</li>
+<li>Post this action to <code>/aivai/submit-action</code></li>
+<li>Go to step 1</li>
+</ol>
+<p>This should continue until manually terminated. See also the detailed
+process described below.</p>
+<p>While all the student projects are following these steps, Softserve
+is tracking the (potentially hundreds of) games being played. When a
+call comes in from a player to <code>/aivai/play-state</code>, it finds
+a game with that player next to move and gives it to them. When they
+return an action, Softserve validates it and applies it to the state,
+and then when their opponent calls <code>/aivai/play-state</code> gives
+the game to them (although perhaps not immediately, if there are many
+games in progress).</p>
+<p>This enables many games to be played in parallel, arbitrated by a
+third party, with each student project only needing to function as a
+“state in, action out” machine.</p>
+<h3 id="details">Details</h3>
+<p>The request to <code>/aivai/play-state</code> requires a
+<code>player</code> and <code>token</code>, which can be obtained from
+<code>/player/create</code> (see above).</p>
+<p>It also requires an <code>event</code>. This indicates which
+tournament you are participating in. The official class tournaments will
+have specific names.</p>
+<p><code>/aivai/play-state</code> returns a state and an
+<code>action_id</code>. The <code>action_id</code> must be saved and
+included in the corresponding call to
+<code>/aivai/submit-action</code>–it is how the server connects the two
+calls.</p>
+<p>The server tracks how much time elapsed between the call to
+<code>/aivai/play-state</code> and the corresponding
+<code>/aivai/submit-action</code> call. If the time exceeds the
+instructor-specified thinking time, the game will be marked as a forfeit
+in the tournament results. (The game itself will continue to be played
+out.)</p>
+<h3 id="testing-with-the-mirror-event">Testing With the Mirror
+Event</h3>
+<p>A simple way to test your integration with the AIvAI endpoints is to
+set the <code>event</code> field to <code>mirror</code>. With that
+event, Softserve creates games where your player plays itself–that is,
+the state resulting from your <code>/aivai/submit-acition</code> call is
+the state in the next <code>/aivai/play-state</code> call.</p>
+<h2 id="bugs">Bugs</h2>
+<p>If you discover a bug in Softserve–and especially in Softserve’s core
+game logic–please report it. We are also here to help with any issues or
+questions you have.</p>
+<p>Either <a
+href="https://github.com/harding-university/softserve/issues/new">create
+an issue</a> or email <a href="mailto:rschneid@harding.edu"
+class="uri">mailto:rschneid@harding.edu</a>.</p>
