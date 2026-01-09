@@ -13,7 +13,8 @@ router = APIRouter(prefix="/player", tags=["player"])
     "/create",
     response_model=PlayerCreateResponse,
     summary="Create a player",
-    description="""""",
+    description="""
+""",
 )
 def player_create(req: PlayerCreate) -> PlayerCreateResponse:
     password = secrets.token_urlsafe()

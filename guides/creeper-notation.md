@@ -17,7 +17,8 @@ sections:
 - 1 character representing the next player to move
 
 The grids are encoded top-to-bottom, left-to-right. `x` denotes the first
-player, `o` denotes the second player, and `.` denotes an empty space.
+player, `o` denotes the second player, and `.` denotes an empty space. All
+letters should be lowercase.
 
 The pin grid does not have corners, but treat them as empty for the sake of
 notation.
@@ -64,8 +65,10 @@ Columns are given a letter, and rows are given a number:
     6 x.....o
     7 .xx.oo.
 
+All letters should be lowercase.
+
 Actions consist of the starting and ending coordinate of the pin being moved.
-For example, moving the upper-left `x` pin up would be `a5a4`.
+For example, moving the `x` pin on a5 north one spot would be `a5a4`.
 
 No additional notation in used for captures.
 

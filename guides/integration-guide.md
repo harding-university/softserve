@@ -65,7 +65,7 @@ during the official tournaments.
 ### Interactive UI
 
 Softserve also provides an interactive UI for visualizing and navigating between
-states. This can be found at <https://softserve.harding.edu/ui>.
+states. This can be found at <https://softserve.harding.edu/ui/>.
 
 The URL hash shows the current state, and can be set to any particular state you
 would like to visualize. Note that invalid notation produces undefined results.

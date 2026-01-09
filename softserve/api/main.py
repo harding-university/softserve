@@ -8,6 +8,7 @@ from pydantic import BaseModel
 # We have to call this before our submodules can import Django models
 django.setup()
 
+#from .routers import aivai, event, player, state
 from .routers import aivai, player, state
 from .util import engine, get_actions
 
@@ -18,7 +19,7 @@ ui_path = environ.get("SOFTSERVE_UI_PATH", "/")
 
 app = FastAPI(
     title="Softserve",
-    version="0.1.0a",
+    version="1.1.0",
     description="""
 # Overview
 Softserve is an integration system for Harding University software
@@ -77,5 +78,8 @@ app.include_router(aivai.router)
 app.include_router(player.router)
 app.include_router(state.router)
 
+
 if ui:
     app.mount(ui_path, StaticFiles(directory=ui, html=True))
+
+app.mount("/", StaticFiles(directory="guides", html=True))
