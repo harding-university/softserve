@@ -36,7 +36,7 @@ class Action(models.Model):
 
 
 class Event(models.Model):
-    name = models.TextField()
+    name = models.TextField(unique=True)
 
     def add_game(self, p1, p2):
         game = Game.objects.create(event=self)
