@@ -68,8 +68,10 @@ WSGI_APPLICATION = "project.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": environ.get("SOFTSERVE_DB_HOST"),
+        "NAME": environ.get("SOFTSERVE_DB_NAME", "softserve"),
+        "PASSWORD": environ.get("SOFTSERVE_DB_PASSWORD"),
     }
 }
 
