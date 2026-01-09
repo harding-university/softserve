@@ -159,4 +159,4 @@ you have.
 
 Either [create an
 issue](https://github.com/harding-university/softserve/issues/new) or email
-<mailto:rschneid@harding.edu>.
+[rschneid@harding.edu](mailto:rschneid@harding.edu).

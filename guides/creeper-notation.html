@@ -1,0 +1,65 @@
+<h1 id="creeper-notation">Creeper Notation</h1>
+<p>This document describes the state and action notation used by
+Softserve for the game <a
+href="https://www.grahams-games.co.uk/creeper.html">Creeper</a>.</p>
+<p>Examples of this notation in use can be found at the <a
+href="https://softserve.harding.edu/ui">UI visualizer</a> and the <a
+href="https://softserve.harding.edu/docs#/state"><code>/state</code>
+API</a> endpoints.</p>
+<h2 id="state-notation">State Notation</h2>
+<p>The state is encoded as a string of 86 characters, divided into the
+following sections:</p>
+<ul>
+<li>49 characters representing the state of the pins</li>
+<li>36 characters representing the state of the paths</li>
+<li>1 character representing the next player to move</li>
+</ul>
+<p>The grids are encoded top-to-bottom, left-to-right. <code>x</code>
+denotes the first player, <code>o</code> denotes the second player, and
+<code>.</code> denotes an empty space.</p>
+<p>The pin grid does not have corners, but treat them as empty for the
+sake of notation.</p>
+<p>Thus, the <a href="https://softserve.harding.edu/ui">initial
+state</a> is encoded as:</p>
+<p><code>.oo.xx.o.....xo.....x.......x.....ox.....o.xx.oo.o....x........................x....ox</code>
+</p>
+<p>If we break this notation into the above setions and add newlines, we
+see it forms two grids and a single character:</p>
+<pre><code>.oo.xx.
+o.....x
+o.....x
+.......
+x.....o
+x.....o
+.xx.oo.
+
+o....x
+......
+......
+......
+......
+x....o
+
+x</code></pre>
+<h2 id="action-notation">Action Notation</h2>
+<p>Actions are encoded as a string of 4 characters, which form a pair of
+coordinates on the pin grid.</p>
+<p>Columns are given a letter, and rows are given a number:</p>
+<pre><code>  abcdefg
+1 .oo.xx.
+2 o.....x
+3 o.....x
+4 .......
+5 x.....o
+6 x.....o
+7 .xx.oo.</code></pre>
+<p>Actions consist of the starting and ending coordinate of the pin
+being moved. For example, moving the upper-left <code>x</code> pin up
+would be <code>a5a4</code>.</p>
+<p>No additional notation in used for captures.</p>
+<h2 id="questions-and-suggestions">Questions and Suggestions</h2>
+<p>If you have any questions, ambiguities, issues, or suggestions for
+this notation, please <a
+href="https://github.com/harding-university/softserve/issues/new">open a
+softserve issue</a> or email <a
+href="mailto:rschneid@harding.edu">rschneid@harding.edu</a>.</p>

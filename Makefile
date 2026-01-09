@@ -9,6 +9,8 @@ dev:
 docs:
 	pandoc -o docs/integration-guide.html docs/integration-guide.md
 	pandoc -o docs/integration-guide.pdf docs/integration-guide.md
+	pandoc -o docs/creeper-notation.html docs/creeper-notation.md
+	pandoc -o docs/creeper-notation.pdf docs/creeper-notation.md
 
 django:
 	poetry run python manage.py runserver 8001
