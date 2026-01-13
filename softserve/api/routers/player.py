@@ -25,6 +25,6 @@ def player_create(req: PlayerCreate) -> PlayerCreateResponse:
             password=password,
         )
     except IntegrityError:
-        raise HTTPException(status_code=403, detail="username already exists")
+        raise HTTPException(status_code=403, detail="player name already exists")
 
     return PlayerCreateResponse(token=password)

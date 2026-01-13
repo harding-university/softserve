@@ -20,6 +20,20 @@ class APITestCase(TransactionTestCase):
         )
         self.password = r.json()["token"]
 
+        self.username2 = "test2"
+        r = self.client.post(
+            "/player/create",
+            json={"name": self.username2, "email": "test2@example.com"},
+        )
+        self.password2 = r.json()["token"]
+
+        self.username3 = "test3"
+        r = self.client.post(
+            "/player/create",
+            json={"name": self.username3, "email": "test3@example.com"},
+        )
+        self.password3 = r.json()["token"]
+
     def get_initial_state(self):
         r = self.client.get("/state/initial")
         return r.json()["state"]
@@ -82,6 +96,57 @@ class APITestCase(TransactionTestCase):
             },
         )
         self.assertEqual(r.status_code, 403)
+
+    def test_event_create(self):
+        r = self.client.post(
+            "/event/create",
+            json={
+                "name": "test event",
+                "players": ["test", "test2"],
+                "game_pairs": 10,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertEqual(Game.objects.count(), 2 * 10)
+
+        # Can't make duplicate event name
+        r = self.client.post(
+            "/event/create",
+            json={
+                "name": "test event",
+                "players": ["test", "test2"],
+                "game_pairs": 10,
+            },
+        )
+        self.assertEqual(r.status_code, 403)
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertEqual(Game.objects.count(), 2 * 10)
+
+        r = self.client.post(
+            "/event/create",
+            json={
+                "name": "test event 2",
+                "players": ["test", "test2", "test3"],
+                "game_pairs": 10,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Event.objects.count(), 2)
+        self.assertEqual(Game.objects.count(), 2 * 10 + 2 * 3 * 10)
+
+        # Try play-state with the event
+        self.assertEqual(Action.objects.count(), 0)
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "test event 2",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Action.objects.count(), 1)
 
 
 class ModelTestCase(TransactionTestCase):

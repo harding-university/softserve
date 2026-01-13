@@ -29,6 +29,16 @@ class EngineResponse(BaseModel):
     log: str
 
 
+class EventCreate(BaseModel):
+    name: str
+    players: List[str]
+    game_pairs: int
+
+
+class EventCreateResponse(BaseModel):
+    pass
+
+
 class PlayerCreate(BaseModel):
     name: str
     email: str

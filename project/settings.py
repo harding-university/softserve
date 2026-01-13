@@ -116,4 +116,5 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SOFTSERVE_THINK_TIME = timedelta(seconds=4.3)
-SOFTSERVE_INIITAL_STATE = get_initial_state()[0]
+SOFTSERVE_INITIAL_STATE = get_initial_state()[0]
+SOFTSERVE_MAX_EVENT_GAMES = int(environ.get("SOFTSERVE_MAX_EVENT_GAMES", 1000))

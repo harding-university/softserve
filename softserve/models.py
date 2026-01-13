@@ -4,6 +4,8 @@ from django.db import models
 
 from .exceptions import SoftserveException
 
+from itertools import combinations
+
 
 class Action(models.Model):
     """A single, discrete action taken by a player during a game"""
@@ -44,6 +46,18 @@ class Event(models.Model):
         game.add_player(p2)
         return game
 
+    def create_matchups(self, users, game_pairs):
+        if (
+            len(list(combinations(users, 2))) * game_pairs
+            > settings.SOFTSERVE_MAX_EVENT_GAMES
+        ):
+            raise SoftserveException("Too many games for event")
+
+        for p1, p2 in combinations(users, 2):
+            for _ in range(game_pairs):
+                self.add_game(p1, p2)
+                self.add_game(p2, p1)
+
     def find_game_for(self, user):
         if self.name == "mirror":
             player = Player.objects.filter(
@@ -78,7 +92,7 @@ class Game(models.Model):
 
     # NOTE: This is loaded from the external engine binary
     # Decision pending on whether this is a good idea
-    initial_state = models.TextField(default=settings.SOFTSERVE_INIITAL_STATE)
+    initial_state = models.TextField(default=settings.SOFTSERVE_INITIAL_STATE)
 
     start_timestamp = models.DateTimeField(auto_now_add=True)
     end_timestamp = models.DateTimeField(blank=True, null=True)
