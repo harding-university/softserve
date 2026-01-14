@@ -26,6 +26,11 @@ def event_create(req: EventCreate) -> EventCreateResponse:
         except User.DoesNotExist:
             raise HTTPException(status_code=404, detail="player not found")
 
+    if len(users) == 1:
+        raise HTTPException(
+            status_code=403, detail="event must have at least 2 players"
+        )
+
     try:
         event = Event.objects.create(name=req.name)
     except IntegrityError:
@@ -39,5 +44,7 @@ def event_create(req: EventCreate) -> EventCreateResponse:
             status_code=403,
             detail=f"too many games; max is {settings.SOFTSERVE_MAX_EVENT_GAMES}",
         )
+
+    event.send_created_email()
 
     return EventCreateResponse()

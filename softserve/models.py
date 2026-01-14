@@ -1,10 +1,12 @@
 from django.conf import settings
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db import models
 
 from .exceptions import SoftserveException
 
 from itertools import combinations
+import secrets
 
 
 class Action(models.Model):
@@ -39,6 +41,13 @@ class Action(models.Model):
 
 class Event(models.Model):
     name = models.TextField(unique=True)
+    dashboard_token = models.CharField(10, blank=True)
+
+    def save(self, **kwargs):
+        if self.dashboard_token:
+            self.dashboard_token = secrets.token_urlsafe(10)
+
+        super().save(**kwargs)
 
     def add_game(self, p1, p2):
         game = Game.objects.create(event=self)
@@ -79,6 +88,22 @@ class Event(models.Model):
                 return player.game
 
         return None
+
+    def send_created_email(self):
+        addresses = set()
+        for game in self.game_set.all():
+            for player in game.player_set.all():
+                addresses.add(player.user.email)
+
+        send_mail(
+            f"{self.name} created",
+            f"""The event {self.name} has been created. You can view the dashboard here:
+
+{settings.SOFTSERVE_URL}/dashboard/?event={self.id}&token={self.dashboard_token}
+""",
+            settings.SERVER_EMAIL,
+            addresses,
+        )
 
     def __str__(self):
         return self.name
@@ -161,10 +186,10 @@ class Game(models.Model):
 
     def __str__(self):
         try:
-            p1 = self.player_set.get(number=0).player
-            p2 = self.player_set.get(number=1).player
+            p1 = self.player_set.get(number=0)
+            p2 = self.player_set.get(number=1)
             return f"#{self.id} {self.event}: {p1} vs. {p2}"
-        except GamePlayer.DoesNotExist:
+        except User.DoesNotExist:
             return f"#{self.id} {self.event}: awaiting matchup"
 
 
@@ -189,4 +214,4 @@ class Player(models.Model):
                 return player
 
     def __str__(self):
-        return f"{self.user.name} P{self.number + 1} in {self.game}"
+        return self.user.username

@@ -115,6 +115,16 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+EMAIL_HOST = environ.get("SOFTSERVE_MAIL_HOST", "localhost")
+EMAIL_PORT = int(environ.get("SOFTSERVE_MAIL_PORT", 25))
+EMAIL_USE_TLS = environ.get("SOFTSERVE_MAIL_USE_TLS") == "true"
+
+ADMINS = [environ.get("SOFTSERVE_ADMIN_ADDRESS")]
+MANAGERS = [environ.get("SOFTSERVE_ADMIN_ADDRESS")]
+SERVER_EMAIL = environ.get("SOFTSERVE_MAIL_FROM", "softserve@localhost")
+
+SOFTSERVE_URL = environ.get("SOFTSERVE_URL", "http://localhost:8000")
+
 SOFTSERVE_THINK_TIME = timedelta(seconds=4.3)
 SOFTSERVE_INITIAL_STATE = get_initial_state()[0]
 SOFTSERVE_MAX_EVENT_GAMES = int(environ.get("SOFTSERVE_MAX_EVENT_GAMES", 1000))

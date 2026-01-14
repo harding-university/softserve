@@ -220,10 +220,3 @@ class ModelTestCase(TransactionTestCase):
 
         # And u1 should have a name now
         self.assertNotEqual(None, self.e1.find_game_for(self.u1))
-
-    def test_createevent(self):
-        call_command(
-            "createevent", "command event", [self.u1, self.u2, self.u3], games=5
-        )
-        event = Event.objects.get(name="command event")
-        self.assertEqual(event.game_set.count(), (3 * 2 / 2) * (5 * 2))

@@ -81,5 +81,5 @@ app.include_router(state.router)
 
 if ui:
     app.mount(ui_path, StaticFiles(directory=ui, html=True))
-
+app.mount("/dashboard/", StaticFiles(directory="dashboard", html=True))
 app.mount("/", StaticFiles(directory="guides", html=True))
