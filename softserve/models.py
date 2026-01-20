@@ -44,7 +44,7 @@ class Event(models.Model):
     dashboard_token = models.CharField(10, blank=True)
 
     def save(self, **kwargs):
-        if self.dashboard_token:
+        if not self.dashboard_token:
             self.dashboard_token = secrets.token_urlsafe(10)
 
         super().save(**kwargs)

@@ -40,10 +40,22 @@ from there using `/state/actions` and `/state/act`
 """,
     openapi_tags=[
         {
+            "name": "player",
+            "description": """
+Client registration. Each client needs to have a player name and token
+to use the `/aivai` API. For official tournaments, you will need to
+provide the Softserve admins with a player name that will represent your
+client in the tournament.
+
+You should not create a new player every time you run your client. You
+should instead store the token and use it in subsequent runs. However,
+you *can* create as many players as you like.
+""",
+        },
+        {
             "name": "aivai",
             "description": """
-AI versus AI interface. **Right now everything here is a stub and can be
-safely tested against.**
+AI versus AI interface.
 
 The general usage is:
 

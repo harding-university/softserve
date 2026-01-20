@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Mapping
 
 from pydantic import BaseModel
 
@@ -37,6 +37,15 @@ class EventCreate(BaseModel):
 
 class EventCreateResponse(BaseModel):
     pass
+
+
+class EventData(BaseModel):
+    name: str
+    token: str
+
+
+class EventDataResponse(BaseModel):
+    data: Mapping[str, Mapping[str, Mapping[str, int]]]
 
 
 class PlayerCreate(BaseModel):

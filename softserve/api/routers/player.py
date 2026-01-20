@@ -14,6 +14,9 @@ router = APIRouter(prefix="/player", tags=["player"])
     response_model=PlayerCreateResponse,
     summary="Create a player",
     description="""
+Call this to create a new player. Save the token (persistently&mdash;do
+not call this every time you run your program) and use it to
+authenticate to `/aivai` endpoints.
 """,
 )
 def player_create(req: PlayerCreate) -> PlayerCreateResponse:
