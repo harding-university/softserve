@@ -15,6 +15,9 @@ import requests
 SOFTSERVE_URL = "https://softserve.harding.edu"
 PLAYER_NAME = "aivai-demo-player"
 PLAYER_EMAIL = "student@example.edu"
+# The mirror event makes for simple testing; see:
+# https://softserve.harding.edu/docs#/aivai/aivai_request_aivai_play_state_post
+EVENT_NAME = "mirror"
 
 
 # If we have already have a token, load it
@@ -50,8 +53,7 @@ while True:
     r = requests.post(
         f"{SOFTSERVE_URL}/aivai/play-state",
         json={
-            # The mirror event makes for simple testing; see linked docs
-            "event": "mirror",
+            "event": EVENT_NAME,
             "player": PLAYER_NAME,
             "token": token,
         },
