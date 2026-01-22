@@ -18,6 +18,7 @@ django:
 
 format:
 	black softserve
+	prettier -w dashboard
 
 
 migrate:

@@ -54,7 +54,11 @@ export default function App() {
     e(
       "table",
       { className: "table table-striped" },
-      e("caption", null, "(parentheses show how many forfeits are included in the total)"),
+      e(
+        "caption",
+        null,
+        "(parentheses show how many forfeits are included in the total)",
+      ),
       e(
         "thead",
         null,
