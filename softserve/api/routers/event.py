@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
 from fastapi import APIRouter, HTTPException
 
 from ...models import Event, Player
@@ -63,7 +62,10 @@ def event_create(req: EventCreate) -> EventCreateResponse:
     include_in_schema=False,
 )
 def event_data(req: EventData) -> EventDataResponse:
-    event = get_object_or_404(Event, name=req.name)
+    try:
+        event = Event.objects.get(name=req.name)
+    except Event.DoesNotExist:
+        raise HTTPException(status_code=404, detail="event not found")
 
     if req.token != event.dashboard_token:
         raise HTTPException(
