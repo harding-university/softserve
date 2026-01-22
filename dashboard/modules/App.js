@@ -1,7 +1,5 @@
 import { e } from "./shortcuts.js";
 
-import Table from "./Table.js";
-
 export default function App() {
   const [eventData, setEventData] = React.useState(null);
 
