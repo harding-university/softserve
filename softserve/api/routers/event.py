@@ -17,9 +17,22 @@ router = APIRouter(prefix="/event", tags=["event"])
     "/create",
     response_model=EventCreateResponse,
     summary="Create an event",
-    # TODO description
-    # TODO don't include while under construction
-    include_in_schema=False,
+    description=f"""
+Call this to create a custom tournament for your own AI testing purposes.
+
+Your POST must contain a json object with the following fields:
+- `name`: the name of the event
+- `players`: a list of player names to include in the tournament
+- `game_pairs`: the number of game pairs to play between players (so 5
+   means each player plays each other player a total of 10 times, 5
+   going first and 5 going second)
+
+Events have a maximum number of total games. On this Softserve instance,
+the maximum is f{settings.SOFTSERVE_MAX_EVENT_GAMES} games.
+
+After the event is created, each player's email will receive a link to
+the event dashboard, which displays the results.
+""",
 )
 def event_create(req: EventCreate) -> EventCreateResponse:
     users = []
@@ -57,9 +70,17 @@ def event_create(req: EventCreate) -> EventCreateResponse:
 @router.post(
     "/data",
     response_model=EventDataResponse,
-    # TODO summary and description
-    # TODO don't include while under construction
-    include_in_schema=False,
+    summary="Get data for an event",
+    description="""
+Call this to get results and other data for an event.
+
+You shouldn't need to call this yourself, unless you're creating your
+own custom event dashboard. Otherwise, use the link sent in the email
+at time of event creation to view event results.
+
+If you are building a custom dashboard or otherwise in need of this,
+you'll need the token included as part of the URL in the email.
+""",
 )
 def event_data(req: EventData) -> EventDataResponse:
     try:

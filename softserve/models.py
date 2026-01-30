@@ -7,6 +7,7 @@ from .exceptions import SoftserveException
 
 from itertools import combinations
 import secrets
+import urllib
 
 
 class Action(models.Model):
@@ -99,7 +100,7 @@ class Event(models.Model):
             f"{self.name} created",
             f"""The event {self.name} has been created. You can view the dashboard here:
 
-{settings.SOFTSERVE_URL}/dashboard/?event={self.id}&token={self.dashboard_token}
+{settings.SOFTSERVE_URL}/dashboard/?event={urllib.parse.quote(self.name)}&token={self.dashboard_token}
 """,
             settings.SERVER_EMAIL,
             addresses,

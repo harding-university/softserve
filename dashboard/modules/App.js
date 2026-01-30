@@ -7,6 +7,8 @@ export default function App() {
   const eventName = urlParams.get("event");
   const eventToken = urlParams.get("token");
 
+  document.title = eventName;
+
   if (!eventData) {
     fetch("/event/data", {
       method: "POST",
