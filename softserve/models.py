@@ -6,8 +6,14 @@ from django.db import models
 from .exceptions import SoftserveException
 
 from itertools import combinations
+from random import shuffle
 import secrets
 import urllib
+
+
+AUTO_CREATE_EVENTS = [
+    "mirror",
+]
 
 
 class Action(models.Model):
@@ -40,9 +46,26 @@ class Action(models.Model):
         return f"{self.game} action {self.number} ({self.user.username})"
 
 
+class EventManager(models.Manager):
+    def find_any_game_for(self, user):
+        events = list(self.all())
+        shuffle(events)
+        for event in events:
+            if event.name in AUTO_CREATE_EVENTS:
+                continue
+
+            game = event.find_game_for(user)
+            if game:
+                return game
+
+        return None
+
+
 class Event(models.Model):
     name = models.TextField(unique=True)
     dashboard_token = models.CharField(10, blank=True)
+
+    objects = EventManager()
 
     def save(self, **kwargs):
         if not self.dashboard_token:

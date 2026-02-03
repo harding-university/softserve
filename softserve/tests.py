@@ -7,7 +7,7 @@ from django.test import TestCase, TransactionTestCase
 from fastapi.testclient import TestClient
 
 from .api.main import app
-from .api.util import engine, get_actions
+from .api.util import engine
 from .models import *
 
 
@@ -147,6 +147,77 @@ class APITestCase(TransactionTestCase):
         )
         self.assertEqual(r.status_code, 200)
         self.assertEqual(Action.objects.count(), 1)
+
+    def test_play_any_event(self):
+        r = self.client.post(
+            "/event/create",
+            json={
+                "name": "test event",
+                "players": ["test", "test2"],
+                "game_pairs": 1,
+            },
+        )
+        r = self.client.post(
+            "/event/create",
+            json={
+                "name": "test event 2",
+                "players": ["test", "test2"],
+                "game_pairs": 1,
+            },
+        )
+
+        # Make a move in both games, requesting * event
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "*",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        action = choice(self.get_actions(r.json()["state"]))
+        r = self.client.post(
+            "/aivai/submit-action",
+            json={
+                "player": self.username,
+                "token": self.password,
+                "action": action,
+                "action_id": r.json()["action_id"],
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "*",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        action = choice(self.get_actions(r.json()["state"]))
+        r = self.client.post(
+            "/aivai/submit-action",
+            json={
+                "player": self.username,
+                "token": self.password,
+                "action": action,
+                "action_id": r.json()["action_id"],
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+
+        # We should get a 204 now
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "*",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 204)
 
 
 class ModelTestCase(TransactionTestCase):

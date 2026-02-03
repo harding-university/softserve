@@ -5,14 +5,9 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from django.contrib.auth import authenticate
 
-from ...models import Action, Event, Game, Player
+from ...models import Action, Event, Game, Player, AUTO_CREATE_EVENTS
 from ..schema import *
 from ..util import engine, get_actions
-
-
-AUTO_CREATE_EVENTS = [
-    "mirror",
-]
 
 
 router = APIRouter(prefix="/aivai", tags=["aivai"])
@@ -41,23 +36,27 @@ The state is independent and may be completely unrelated to states given
 in previous and subsequent calls.
 """,
 )
-def aivai_request(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
+def aivai_play_state(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     # Get user
     user = authenticate(username=req.player, password=req.token)
     if not user:
         raise HTTPException(status_code=403, detail="invalid credentials")
 
-    # Get event
-    if req.event in AUTO_CREATE_EVENTS:
-        event, _ = Event.objects.get_or_create(name=req.event)
+    if req.event == "*":
+        # Get any event
+        game = Event.objects.find_any_game_for(user)
     else:
-        try:
-            event = Event.objects.get(name=req.event)
-        except Event.DoesNotExist:
-            raise HTTPException(status_code=404, detail="event not found")
+        # Get requested event
+        if req.event in AUTO_CREATE_EVENTS:
+            event, _ = Event.objects.get_or_create(name=req.event)
+        else:
+            try:
+                event = Event.objects.get(name=req.event)
+            except Event.DoesNotExist:
+                raise HTTPException(status_code=404, detail="event not found")
 
-    # Find a game in the event for the player
-    game = event.find_game_for(user)
+        # Find a game in the event for the player
+        game = event.find_game_for(user)
 
     if game == None:
         raise HTTPException(
