@@ -4,7 +4,7 @@ This document describes the state and action notation used by Softserve for the
 game [Creeper](https://www.grahams-games.co.uk/creeper.html).
 
 Examples of this notation in use can be found at the [UI
-visualizer](https://softserve.harding.edu/ui) and the [`/state`
+visualizer](https://softserve.harding.edu/ui/) and the [`/state`
 API](https://softserve.harding.edu/docs#/state) endpoints.
 
 ## State Notation
@@ -23,7 +23,7 @@ letters should be lowercase.
 The pin grid does not have corners, but treat them as empty for the sake of
 notation.
 
-Thus, the [initial state](https://softserve.harding.edu/ui) is encoded as:
+Thus, the [initial state](https://softserve.harding.edu/ui/) is encoded as:
 
 \small
 `.oo.xx.o.....xo.....x.......x.....ox.....o.xx.oo.o....x........................x....ox`
