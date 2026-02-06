@@ -217,7 +217,7 @@ class Game(models.Model):
             return f"#{self.id} {self.event}: awaiting matchup"
 
 
-# NOTE: When the user-facing API uses the term player, it referse to a
+# NOTE: When the user-facing API uses the term player, it refers to a
 # Django user, not this class. This class here is the junction between
 # users and games.
 class Player(models.Model):

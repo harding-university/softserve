@@ -128,12 +128,12 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
         game.end_timestamp = now
         game.save()
         if winner == "x":
-            gameplayer = game.gameplayer_set.get(number=0)
-            gameplayer.winner = True
-            gameplayer.save()
+            player = game.player_set.get(number=0)
+            player.winner = True
+            player.save()
         if winner == "o":
-            gameplayer = game.gameplayer_set.get(number=1)
-            gameplayer.winner = True
-            gameplayer.save()
+            player = game.player_set.get(number=1)
+            player.winner = True
+            player.save()
 
     return AIvAISubmitActionResponse(winner=winner)
