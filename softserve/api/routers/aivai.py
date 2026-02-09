@@ -63,10 +63,16 @@ def aivai_play_state(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
             status_code=204, detail="no games waiting; please try again"
         )
 
+    history = [game.initial_state]
+    actions = game.action_set.order_by("number")
+    history += [action.after_state for action in actions if action.after_state]
+
     # Create a pending action on the game
     action = game.next_action()
 
-    return AIvAIPlayStateResponse(state=action.before_state, action_id=action.id)
+    return AIvAIPlayStateResponse(
+        state=action.before_state, action_id=action.id, history=history
+    )
 
 
 @router.post(

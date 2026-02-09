@@ -219,6 +219,66 @@ class APITestCase(TransactionTestCase):
         )
         self.assertEqual(r.status_code, 204)
 
+    def test_history(self):
+        history = []
+
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "mirror",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+
+        state = r.json()["state"]
+        history.append(state)
+        self.assertEqual(r.json()["history"], history)
+
+        for i in range(6):
+            action = choice(list(self.get_actions(state)))
+            next_state = self.client.get(f"/state/{state}/act/{action}").json()["state"]
+            history.append(next_state)
+
+            r = self.client.post(
+                "/aivai/submit-action",
+                json={
+                    "player": self.username,
+                    "token": self.password,
+                    "action": action,
+                    "action_id": r.json()["action_id"],
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+
+            r = self.client.post(
+                "/aivai/play-state",
+                json={
+                    "event": "mirror",
+                    "player": self.username,
+                    "token": self.password,
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+
+            state = r.json()["state"]
+            self.assertEqual(r.json()["history"], history)
+
+        # Test a double call to play-state
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "mirror",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+
+        state = r.json()["state"]
+        self.assertEqual(r.json()["history"], history)
+
 
 class ModelTestCase(TransactionTestCase):
     def setUp(self):

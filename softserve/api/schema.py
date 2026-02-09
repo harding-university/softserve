@@ -12,6 +12,7 @@ class AIvAIPlayState(BaseModel):
 class AIvAIPlayStateResponse(BaseModel):
     state: str
     action_id: int
+    history: List[str]
 
 
 class AIvAISubmitAction(BaseModel):
