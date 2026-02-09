@@ -1,10 +1,11 @@
 import { e } from "./shortcuts.js";
 
 export default function App() {
+  const [eventName, setEventName] = React.useState(null);
   const [eventData, setEventData] = React.useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
-  const eventName = urlParams.get("event");
+  const eventid = urlParams.get("event");
   const eventToken = urlParams.get("token");
 
   document.title = eventName;
@@ -15,10 +16,11 @@ export default function App() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name: eventName, token: eventToken }),
+      body: JSON.stringify({ event_id: eventid, token: eventToken }),
     })
       .then((response) => response.json())
       .then((json) => {
+        setEventName(json.name);
         setEventData(json.data);
       });
     return;

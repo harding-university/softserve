@@ -279,6 +279,31 @@ class APITestCase(TransactionTestCase):
         state = r.json()["state"]
         self.assertEqual(r.json()["history"], history)
 
+    def test_event_create_no_name(self):
+        r = self.client.post(
+            "/event/create",
+            json={
+                "players": ["test", "test2"],
+                "game_pairs": 10,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertEqual(Game.objects.count(), 2 * 10)
+        event_name = r.json()["name"]
+
+        r = self.client.post(
+            "/event/create",
+            json={
+                "players": ["test", "test2"],
+                "game_pairs": 10,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Event.objects.count(), 2)
+        self.assertEqual(Game.objects.count(), 2 * 10 * 2)
+        self.assertNotEqual(event_name, r.json()["name"])
+
 
 class ModelTestCase(TransactionTestCase):
     def setUp(self):

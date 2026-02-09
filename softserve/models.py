@@ -62,7 +62,7 @@ class EventManager(models.Manager):
 
 
 class Event(models.Model):
-    name = models.TextField(unique=True)
+    name = models.TextField(unique=True, blank=True, null=True)
     dashboard_token = models.CharField(10, blank=True)
 
     objects = EventManager()
@@ -72,6 +72,10 @@ class Event(models.Model):
             self.dashboard_token = secrets.token_urlsafe(10)
 
         super().save(**kwargs)
+
+        if not self.name:
+            self.name = f"tournament-{self.id}"
+            super().save()
 
     def add_game(self, p1, p2):
         game = Game.objects.create(event=self)
@@ -123,7 +127,7 @@ class Event(models.Model):
             f"{self.name} created",
             f"""The event {self.name} has been created. You can view the dashboard here:
 
-{settings.SOFTSERVE_URL}/dashboard/?event={urllib.parse.quote(self.name)}&token={self.dashboard_token}
+{settings.SOFTSERVE_URL}/dashboard/?event={self.id}&token={self.dashboard_token}
 """,
             settings.SERVER_EMAIL,
             addresses,

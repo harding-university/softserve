@@ -31,21 +31,23 @@ class EngineResponse(BaseModel):
 
 
 class EventCreate(BaseModel):
-    name: str
+    name: str | None = None
     players: List[str]
     game_pairs: int
 
 
 class EventCreateResponse(BaseModel):
-    pass
-
-
-class EventData(BaseModel):
     name: str
     token: str
 
 
+class EventData(BaseModel):
+    event_id: int
+    token: str
+
+
 class EventDataResponse(BaseModel):
+    name: str
     data: Mapping[str, Mapping[str, Mapping[str, int]]]
 
 

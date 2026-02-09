@@ -18,7 +18,7 @@ ui_path = environ.get("SOFTSERVE_UI_PATH", "/")
 
 app = FastAPI(
     title="Softserve",
-    version="1.1.0",
+    version="1.1.1",
     description="""
 # Overview
 Softserve is an integration system for Harding University software

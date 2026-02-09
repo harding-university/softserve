@@ -35,11 +35,11 @@ the event dashboard, which displays the results.
 """,
 )
 def event_create(req: EventCreate) -> EventCreateResponse:
-    users = []
+    users = set()
     for username in req.players:
         try:
             user = User.objects.get(username=username)
-            users.append(user)
+            users.add(user)
         except User.DoesNotExist:
             raise HTTPException(status_code=404, detail="player not found")
 
@@ -64,7 +64,7 @@ def event_create(req: EventCreate) -> EventCreateResponse:
 
     event.send_created_email()
 
-    return EventCreateResponse()
+    return EventCreateResponse(name=event.name, token=event.dashboard_token)
 
 
 @router.post(
@@ -84,7 +84,7 @@ you'll need the token included as part of the URL in the email.
 )
 def event_data(req: EventData) -> EventDataResponse:
     try:
-        event = Event.objects.get(name=req.name)
+        event = Event.objects.get(pk=req.event_id)
     except Event.DoesNotExist:
         raise HTTPException(status_code=404, detail="event not found")
 
@@ -124,4 +124,4 @@ def event_data(req: EventData) -> EventDataResponse:
             else:
                 data["players"][player_name]["draws"] += 1
 
-    return EventDataResponse(data=data)
+    return EventDataResponse(name=event.name, data=data)
