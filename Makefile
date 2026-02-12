@@ -7,10 +7,12 @@ dev:
 
 
 docs:
-	pandoc -o guides/integration-guide.html guides/integration-guide.md
-	pandoc -o guides/integration-guide.pdf guides/integration-guide.md
 	pandoc -o guides/creeper-notation.html guides/creeper-notation.md
 	pandoc -o guides/creeper-notation.pdf guides/creeper-notation.md
+	pandoc -o guides/event-guide.html guides/event-guide.md
+	pandoc -o guides/event-guide.pdf guides/event-guide.md
+	pandoc -o guides/integration-guide.html guides/integration-guide.md
+	pandoc -o guides/integration-guide.pdf guides/integration-guide.md
 
 django:
 	poetry run python manage.py runserver 8001

@@ -10,7 +10,6 @@ from random import shuffle
 import secrets
 import urllib
 
-
 AUTO_CREATE_EVENTS = [
     "mirror",
 ]

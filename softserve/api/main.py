@@ -11,7 +11,6 @@ django.setup()
 from .routers import aivai, event, player, state
 from .util import engine, get_actions
 
-
 ui = environ.get("SOFTSERVE_UI")
 ui_path = environ.get("SOFTSERVE_UI_PATH", "/")
 

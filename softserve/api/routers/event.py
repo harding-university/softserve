@@ -9,7 +9,6 @@ from ...exceptions import SoftserveException
 
 from collections import Counter
 
-
 router = APIRouter(prefix="/event", tags=["event"])
 
 
@@ -21,11 +20,11 @@ router = APIRouter(prefix="/event", tags=["event"])
 Call this to create a custom tournament for your own AI testing purposes.
 
 Your POST must contain a json object with the following fields:
-- `name`: the name of the event
 - `players`: a list of player names to include in the tournament
 - `game_pairs`: the number of game pairs to play between players (so 5
    means each player plays each other player a total of 10 times, 5
    going first and 5 going second)
+- `name`: the name of the event (optional; a name will be assigned if absent)
 
 Events have a maximum number of total games. On this Softserve instance,
 the maximum is f{settings.SOFTSERVE_MAX_EVENT_GAMES} games.

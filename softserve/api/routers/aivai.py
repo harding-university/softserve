@@ -9,7 +9,6 @@ from ...models import Action, Event, Game, Player, AUTO_CREATE_EVENTS
 from ..schema import *
 from ..util import engine, get_actions
 
-
 router = APIRouter(prefix="/aivai", tags=["aivai"])
 
 
