@@ -62,15 +62,11 @@ def aivai_play_state(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
             status_code=204, detail="no games waiting; please try again"
         )
 
-    history = [game.initial_state]
-    actions = game.action_set.order_by("number")
-    history += [action.after_state for action in actions if action.after_state]
-
     # Create a pending action on the game
     action = game.next_action()
 
     return AIvAIPlayStateResponse(
-        state=action.before_state, action_id=action.id, history=history
+        state=action.before_state, action_id=action.id, history=game.history
     )
 
 
@@ -126,10 +122,10 @@ def aivai_submit_action(req: AIvAISubmitAction) -> AIvAISubmitActionResponse:
     action.save()
 
     # Check if state is terminal
+    game = action.game
     stdout, _ = engine("-W", action.after_state)
     winner = stdout.strip()
-    if winner in ["x", "o", "draw"]:
-        game = action.game
+    if winner in ["x", "o", "draw"] or game.threefold_repetition:
         game.end_timestamp = now
         game.save()
         if winner == "x":

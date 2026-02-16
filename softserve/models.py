@@ -5,6 +5,7 @@ from django.db import models
 
 from .exceptions import SoftserveException
 
+from collections import Counter
 from itertools import combinations
 from random import shuffle
 import secrets
@@ -174,6 +175,20 @@ class Game(models.Model):
     @property
     def depth(self):
         return self.action_set.order_by("-number").first().number + 1
+
+    @property
+    def history(self):
+        history = [self.initial_state]
+        actions = self.action_set.order_by("number")
+        history += [action.after_state for action in actions if action.after_state]
+        return history
+
+    @property
+    def threefold_repetition(self):
+        counts = Counter()
+        for state in self.history:
+            counts[state] += 1
+        return max(counts.values()) >= 3
 
     @property
     def forfeit(self):

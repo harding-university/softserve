@@ -376,3 +376,42 @@ class ModelTestCase(TransactionTestCase):
 
         # And u1 should have a name now
         self.assertNotEqual(None, self.e1.find_game_for(self.u1))
+
+
+class CreeperTestCase(APITestCase):
+    def test_threefold_repetition_draws(self):
+        self.assertEqual(Game.objects.count(), 0)
+
+        for move in ["c7d7", "c1d1", "d7c7", "d1c1", "c7d7", "c1d1", "d7c7", "d1c1"]:
+            r = self.client.post(
+                "/aivai/play-state",
+                json={
+                    "event": "mirror",
+                    "player": self.username,
+                    "token": self.password,
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(Game.objects.count(), 1)
+            r = self.client.post(
+                "/aivai/submit-action",
+                json={
+                    "player": self.username,
+                    "token": self.password,
+                    "action": move,
+                    "action_id": r.json()["action_id"],
+                },
+            )
+            self.assertEqual(r.status_code, 200)
+
+        r = self.client.post(
+            "/aivai/play-state",
+            json={
+                "event": "mirror",
+                "player": self.username,
+                "token": self.password,
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        # First game should have ended in a draw, so we should have a new game
+        self.assertEqual(Game.objects.count(), 2)
