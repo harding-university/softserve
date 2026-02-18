@@ -108,13 +108,14 @@ def event_data(req: EventData) -> EventDataResponse:
                 data["players"][player_name]["ongoing"] += 1
                 continue
 
-            forfeit = game.forfeit
-            if forfeit:
-                if player == forfeit:
-                    data["players"][player_name]["forfeit_losses"] += 1
-                else:
-                    data["players"][player_name]["forfeit_wins"] += 1
-                continue
+            if req.forfeits:
+                forfeit = game.forfeit
+                if forfeit:
+                    if player == forfeit:
+                        data["players"][player_name]["forfeit_losses"] += 1
+                    else:
+                        data["players"][player_name]["forfeit_wins"] += 1
+                    continue
 
             if player.winner:
                 data["players"][player_name]["wins"] += 1

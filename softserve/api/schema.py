@@ -44,6 +44,7 @@ class EventCreateResponse(BaseModel):
 
 class EventData(BaseModel):
     event_id: int
+    forfeits: bool | None = True
     token: str
 
 
