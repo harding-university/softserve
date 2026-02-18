@@ -66,7 +66,10 @@ def aivai_play_state(req: AIvAIPlayState) -> AIvAIPlayStateResponse:
     action = game.next_action()
 
     return AIvAIPlayStateResponse(
-        state=action.before_state, action_id=action.id, history=game.history
+        state=action.before_state,
+        action_id=action.id,
+        game_id=game.id,
+        history=game.history,
     )
 
 

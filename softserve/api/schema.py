@@ -10,8 +10,9 @@ class AIvAIPlayState(BaseModel):
 
 
 class AIvAIPlayStateResponse(BaseModel):
-    state: str
     action_id: int
+    state: str
+    game_id: int
     history: List[str]
 
 
