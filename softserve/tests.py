@@ -11,6 +11,8 @@ from .api.util import engine
 from .models import *
 
 
+# Class for common tasks--write tests in SoftserveTestCase or elsewhere
+# (e.g. a game-specific test case)
 class APITestCase(TransactionTestCase):
     def setUp(self):
         self.client = TestClient(app)
@@ -41,6 +43,11 @@ class APITestCase(TransactionTestCase):
     def get_actions(self, state):
         r = self.client.get(f"/state/{state}/actions")
         return r.json()["actions"]
+
+
+class SoftserveTestCase(APITestCase):
+    def test_xyz(self):
+        self.assertTrue(True)
 
     def test_player_play(self):
         r = self.client.post(
