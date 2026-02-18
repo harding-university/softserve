@@ -53,6 +53,23 @@ class EventDataResponse(BaseModel):
     data: Mapping[str, Mapping[str, Mapping[str, int]]]
 
 
+class GameData(BaseModel):
+    game_id: int
+    token: str
+
+
+class GameDataResponse(BaseModel):
+    event: str
+    players: List[str]
+    initial_state: str
+    states: List[str]
+    actions: List[str]
+    start_timestamp: str
+    end_timestamp: str
+    result: str
+    forfeit: str
+
+
 class PlayerCreate(BaseModel):
     name: str
     email: str

@@ -3,9 +3,9 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from fastapi import APIRouter, HTTPException
 
+from ...exceptions import SoftserveException
 from ...models import Event, Player
 from ..schema import *
-from ...exceptions import SoftserveException
 
 from collections import Counter
 

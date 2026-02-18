@@ -184,6 +184,12 @@ class Game(models.Model):
         return history
 
     @property
+    def history_actions(self):
+        history = [self.initial_state]
+        actions = self.action_set.order_by("number")
+        return [action.notation for action in actions]
+
+    @property
     def threefold_repetition(self):
         counts = Counter()
         for state in self.history:
