@@ -95,9 +95,17 @@ def event_data(req: EventData) -> EventDataResponse:
 
     data = {}
     data["players"] = {}
+    data["games"] = []
 
     games = event.game_set.all()
     for game in games:
+        game_data = {}
+        game_data["id"] = game.id
+        data["games"].append(game_data)
+
+        game_data["x"] = game.player_set.get(number=0).user.username
+        game_data["y"] = game.player_set.get(number=1).user.username
+
         for player in game.player_set.all():
             player_name = player.user.username
 
@@ -106,6 +114,7 @@ def event_data(req: EventData) -> EventDataResponse:
 
             if not game.end_timestamp:
                 data["players"][player_name]["ongoing"] += 1
+                game_data["result"] = "ongoing"
                 continue
 
             if req.forfeits:
@@ -113,15 +122,24 @@ def event_data(req: EventData) -> EventDataResponse:
                 if forfeit:
                     if player == forfeit:
                         data["players"][player_name]["forfeit_losses"] += 1
+                        if player_name == game_data["x"]:
+                            game_data["result"] = "x forfeit"
+                        if player_name == game_data["y"]:
+                            game_data["result"] = "y forfeit"
                     else:
                         data["players"][player_name]["forfeit_wins"] += 1
                     continue
 
             if player.winner:
                 data["players"][player_name]["wins"] += 1
+                if player_name == game_data["x"]:
+                    game_data["result"] = "x win"
+                if player_name == game_data["y"]:
+                    game_data["result"] = "y win"
             elif player.opponent.winner:
                 data["players"][player_name]["losses"] += 1
             else:
                 data["players"][player_name]["draws"] += 1
+                game_data["result"] = "draw"
 
     return EventDataResponse(name=event.name, data=data)

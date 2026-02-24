@@ -50,7 +50,7 @@ class EventData(BaseModel):
 
 class EventDataResponse(BaseModel):
     name: str
-    data: Mapping[str, Mapping[str, Mapping[str, int]]]
+    data: Mapping[str, Mapping[str, Mapping[str, int]] | List[Mapping[str, int|str]]]
 
 
 class GameData(BaseModel):
@@ -77,6 +77,15 @@ class PlayerCreate(BaseModel):
 
 class PlayerCreateResponse(BaseModel):
     token: str
+
+
+class PlayerGames(BaseModel):
+    name: str
+    token: str
+
+
+class PlayerGamesResponse(BaseModel):
+    game_ids: List[int]
 
 
 class StateInitialResponse(EngineResponse):

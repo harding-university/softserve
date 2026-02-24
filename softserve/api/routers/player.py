@@ -1,9 +1,11 @@
 import secrets
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from fastapi import APIRouter, HTTPException
 
+from ...models import Player
 from ..schema import *
 
 router = APIRouter(prefix="/player", tags=["player"])
@@ -31,3 +33,17 @@ def player_create(req: PlayerCreate) -> PlayerCreateResponse:
         raise HTTPException(status_code=403, detail="player name already exists")
 
     return PlayerCreateResponse(token=password)
+
+
+@router.post(
+    "/games",
+    response_model=PlayerGamesResponse,
+)
+def player_games(req: PlayerGames) -> PlayerGamesResponse:
+    user = authenticate(username=req.name, password=req.token)
+    if not user:
+        raise HTTPException(status_code=403, detail="invalid credentials")
+
+    return PlayerGamesResponse(
+        game_ids=[player.game.id for player in Player.objects.filter(user=user)]
+    )

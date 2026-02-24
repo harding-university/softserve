@@ -10,7 +10,7 @@ export default function App() {
 
   document.title = eventName;
 
-  if (!eventData) {
+  React.useEffect(() => {
     fetch("/event/data", {
       method: "POST",
       headers: {
@@ -24,10 +24,14 @@ export default function App() {
         setEventData(json.data);
       });
     return;
+  }, []);
+
+  if (!eventData) {
+    return;
   }
 
-  const rows = [];
-  for (var player in eventData.players) {
+  const results_rows = [];
+  for (let player in eventData.players) {
     const playerData = eventData.players[player] || {};
     const wins = playerData.wins || 0;
     const losses = playerData.losses || 0;
@@ -36,7 +40,7 @@ export default function App() {
     const forfeitLosses = playerData.forfeit_losses || 0;
     const ongoing = playerData.ongoing || 0;
 
-    rows.push(
+    results_rows.push(
       e(
         "tr",
         { key: player },
@@ -49,10 +53,33 @@ export default function App() {
     );
   }
 
+  const games_rows = [];
+  for (let game of eventData.games) {
+    games_rows.push(
+      e(
+        "tr",
+        { key: game.id },
+        e(
+          "td",
+          null,
+          e(
+            "a",
+            { href: "/ui/?game=" + game.id + "&token=" + eventToken },
+            game.id,
+          ),
+        ),
+        e("td", null, game.x),
+        e("td", null, game.y),
+        e("td", null, game.result),
+      ),
+    );
+  }
+
   return e(
     "div",
     null,
     e("h1", null, eventName),
+    e("h2", null, "Results"),
     e(
       "table",
       { className: "table table-striped" },
@@ -74,7 +101,25 @@ export default function App() {
           e("th", null, "ongoing"),
         ),
       ),
-      e("tbody", null, rows),
+      e("tbody", null, results_rows),
+    ),
+    e("h2", null, "Games"),
+    e(
+      "table",
+      { className: "table table-striped" },
+      e(
+        "thead",
+        null,
+        e(
+          "tr",
+          null,
+          e("th", null, "id"),
+          e("th", null, "x"),
+          e("th", null, "o"),
+          e("th", null, "result"),
+        ),
+      ),
+      e("tbody", null, games_rows),
     ),
   );
 }
