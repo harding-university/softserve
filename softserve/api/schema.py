@@ -50,7 +50,7 @@ class EventData(BaseModel):
 
 class EventDataResponse(BaseModel):
     name: str
-    data: Mapping[str, Mapping[str, Mapping[str, int]] | List[Mapping[str, int|str]]]
+    data: Mapping[str, Mapping[str, Mapping[str, int]] | List[Mapping[str, int | str]]]
 
 
 class GameData(BaseModel):

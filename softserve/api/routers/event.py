@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import IntegrityError
 from fastapi import APIRouter, HTTPException
 
@@ -10,6 +11,9 @@ from ..schema import *
 from collections import Counter
 
 router = APIRouter(prefix="/event", tags=["event"])
+
+
+EVENT_DATA_CACHE_TIMEOUT = 20
 
 
 @router.post(
@@ -93,6 +97,11 @@ def event_data(req: EventData) -> EventDataResponse:
             detail=f"invalid token",
         )
 
+    cache_key = f"event:{event.id}:data"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return EventDataResponse(name=event.name, data=cached_data)
+
     data = {}
     data["players"] = {}
     data["games"] = []
@@ -103,11 +112,11 @@ def event_data(req: EventData) -> EventDataResponse:
         game_data["id"] = game.id
         data["games"].append(game_data)
 
-        game_data["x"] = game.player_set.get(number=0).user.username
-        game_data["y"] = game.player_set.get(number=1).user.username
+        game_data["x"] = game.player_name(0)
+        game_data["y"] = game.player_name(1)
 
         for player in game.player_set.all():
-            player_name = player.user.username
+            player_name = player.name()
 
             if player_name not in data["players"]:
                 data["players"][player_name] = Counter()
@@ -141,5 +150,7 @@ def event_data(req: EventData) -> EventDataResponse:
             else:
                 data["players"][player_name]["draws"] += 1
                 game_data["result"] = "draw"
+
+    cache.set(cache_key, data, timeout=30)
 
     return EventDataResponse(name=event.name, data=data)

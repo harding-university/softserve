@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import models
 
@@ -232,6 +233,15 @@ class Game(models.Model):
             before_state=state,
         )
 
+    def player_name(self, number):
+        cache_key = f"game:{self.id}:player_name:{number}"
+        cached_name = cache.get(cache_key)
+        if cached_name:
+            return cached_name
+        name = self.player_set.get(number=number).name()
+        cache.set(cache_key, name)
+        return name
+
     def __str__(self):
         try:
             p1 = self.player_set.get(number=0)
@@ -260,6 +270,15 @@ class Player(models.Model):
         for player in self.game.player_set.all():
             if player != self:
                 return player
+
+    def name(self):
+        cache_key = f"player:{self.id}:name"
+        cached_name = cache.get(cache_key)
+        if cached_name:
+            return cached_name
+        name = self.user.username
+        cache.set(cache_key, name)
+        return name
 
     def __str__(self):
         return self.user.username

@@ -12,6 +12,7 @@ python = "^3.12"
 fastapi = {extras = ["standard"], version = ">=0.122.0,<0.123.0"}
 django = "^6.0.0"
 psycopg = "^3.3.2"
+redis = "^7.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
