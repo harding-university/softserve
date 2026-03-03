@@ -1,0 +1,43 @@
+from os import environ
+
+from fastapi import APIRouter, HTTPException, Path
+
+from ..schema import *
+from ..util import engine, get_actions, get_initial_state, SoftserveException
+
+THINK_TOKEN = environ.get("SOFTSERVE_THINK_TOKEN")
+
+# TODO
+MIN_WORKERS = 1
+MAX_WORKERS = 2
+MIN_ITERATIONS = 1000
+MAX_ITERATIONS = 100000
+
+STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
+if not STATE_REGEX:
+    raise SoftserveException("No state regex defined!")
+
+
+router = APIRouter(prefix="/think", tags=["think"])
+
+
+@router.post("/action/{state}", response_model=ThinkResponse, include_in_schema=False)
+async def state_think(
+    req: Think, state: str = Path(pattern=STATE_REGEX)
+) -> ThinkResponse:
+    if not req.token:
+        raise HTTPException(status_code=403, detail="think token required")
+    if req.token != THINK_TOKEN:
+        raise HTTPException(status_code=403, detail="invalid think token")
+
+    workers = min(int(req.workers), MAX_WORKERS)
+    workers = max(workers, MIN_WORKERS)
+
+    iterations = min(int(req.iterations), MAX_ITERATIONS)
+    iterations = max(iterations, MIN_ITERATIONS)
+
+    action, stderr = engine(f"-t", state)
+    after, _ = engine("-a", action, state)
+    actions, _ = get_actions(after)
+
+    return ThinkResponse(action=action, state=after, actions=actions, log=stderr)

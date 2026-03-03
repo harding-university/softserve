@@ -100,7 +100,13 @@ class StateActResponse(StateActionsResponse):
     state: str
 
 
-class StateThinkResponse(StateActionsResponse):
+class Think(BaseModel):
+    token: str
+    workers: int | None = 0
+    iterations: int | None = 0
+
+
+class ThinkResponse(StateActionsResponse):
     action: str
     state: str
 

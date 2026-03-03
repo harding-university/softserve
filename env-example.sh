@@ -1,5 +1,6 @@
 #!/bin/bash
 export SOFTSERVE_SECRET_KEY=CHANGE_THIS
+#export SOFTSERVE_THINK_TOKEN=CHANGE_THIS
 
 export SOFTSERVE_ENGINE=/opt/game/engine/game
 
