@@ -100,15 +100,26 @@ class StateActResponse(StateActionsResponse):
     state: str
 
 
-class Think(BaseModel):
+class ThinkAction(BaseModel):
     token: str
     workers: int | None = 0
     iterations: int | None = 0
 
 
-class ThinkResponse(StateActionsResponse):
+class ThinkActionResponse(StateActionsResponse):
     action: str
     state: str
+
+
+class ThinkLimits(BaseModel):
+    token: str
+
+
+class ThinkLimitsResponse(BaseModel):
+    min_iterations: int
+    max_iterations: int
+    min_workers: int
+    max_workers: int
 
 
 class StateWinnerResponse(EngineResponse):

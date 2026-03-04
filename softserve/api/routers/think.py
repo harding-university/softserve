@@ -21,10 +21,12 @@ if not STATE_REGEX:
 router = APIRouter(prefix="/think", tags=["think"])
 
 
-@router.post("/action/{state}", response_model=ThinkResponse, include_in_schema=False)
-async def state_think(
-    req: Think, state: str = Path(pattern=STATE_REGEX)
-) -> ThinkResponse:
+@router.post(
+    "/action/{state}", response_model=ThinkActionResponse, include_in_schema=False
+)
+async def think_action(
+    req: ThinkAction, state: str = Path(pattern=STATE_REGEX)
+) -> ThinkActionResponse:
     if not req.token:
         raise HTTPException(status_code=403, detail="think token required")
     if req.token != THINK_TOKEN:
@@ -40,4 +42,19 @@ async def state_think(
     after, _ = engine("-a", action, state)
     actions, _ = get_actions(after)
 
-    return ThinkResponse(action=action, state=after, actions=actions, log=stderr)
+    return ThinkActionResponse(action=action, state=after, actions=actions, log=stderr)
+
+
+@router.post("/limits")
+async def think_limits(req: ThinkLimits) -> ThinkLimitsResponse:
+    if not req.token:
+        raise HTTPException(status_code=403, detail="think token required")
+    if req.token != THINK_TOKEN:
+        raise HTTPException(status_code=403, detail="invalid think token")
+
+    return ThinkLimitsResponse(
+        min_iterations=MIN_ITERATIONS,
+        max_iterations=MAX_ITERATIONS,
+        min_workers=MIN_WORKERS,
+        max_workers=MAX_WORKERS,
+    )

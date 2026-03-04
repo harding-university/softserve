@@ -6,7 +6,6 @@ from fastapi import APIRouter, Header, HTTPException, Path
 from ..schema import *
 from ..util import engine, get_actions, get_initial_state, SoftserveException
 
-
 STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
 if not STATE_REGEX:
     raise SoftserveException("No state regex defined!")
