@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 SECRET_KEY = environ.get("SOFTSERVE_SECRET_KEY")
-DEBUG = environ.get("SOFTSERVE_DEBUG").lower() == "y"
+DEBUG = environ.get("SOFTSERVE_DEBUG", "").lower() == "y"
 
 ALLOWED_HOSTS = []
 
