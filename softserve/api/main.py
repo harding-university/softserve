@@ -8,7 +8,7 @@ from pydantic import BaseModel
 # We have to call this before our submodules can import Django models
 django.setup()
 
-from .routers import aivai, event, game, player, state
+from .routers import aivai, event, game, player, think, state
 from .util import engine, get_actions
 
 ui = environ.get("SOFTSERVE_UI")
@@ -88,6 +88,7 @@ app.include_router(aivai.router)
 app.include_router(event.router)
 app.include_router(game.router)
 app.include_router(player.router)
+app.include_router(think.router)
 app.include_router(state.router)
 
 

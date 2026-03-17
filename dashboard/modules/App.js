@@ -45,7 +45,7 @@ export default function App() {
         "tr",
         { key: player },
         e("td", null, player),
-        e("td", null, (wins + forfeitWins)*3 + draws),
+        e("td", null, (wins + forfeitWins) * 3 + draws),
         e("td", null, wins + forfeitWins + " (" + forfeitWins + ")"),
         e("td", null, losses + forfeitLosses + " (" + forfeitLosses + ")"),
         e("td", null, draws),
@@ -55,7 +55,10 @@ export default function App() {
   }
 
   results_rows.sort((a, b) => {
-    return Number(b.props.children[1].props.children) - Number(a.props.children[1].props.children);
+    return (
+      Number(b.props.children[1].props.children) -
+      Number(a.props.children[1].props.children)
+    );
   });
 
   const games_rows = [];
