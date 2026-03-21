@@ -1,8 +1,6 @@
 from os import environ
 from subprocess import run
 
-from fastapi import HTTPException
-
 
 class SoftserveException(Exception):
     pass
