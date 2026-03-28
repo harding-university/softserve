@@ -4,35 +4,33 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
-from fastapi.testclient import TestClient
+from rest_framework.test import APITestCase, APITransactionTestCase
 
-from .api.main import app
-from .api.util import engine
+from .util import engine
 from .models import *
 
 
-# Class for common tasks--write tests in SoftserveTestCase or elsewhere
+# Class for common tasks--write tests in GenericGameTestCase or elsewhere
 # (e.g. a game-specific test case)
-class APITestCase(TransactionTestCase):
+class SoftserveTestCase(APITransactionTestCase):
     def setUp(self):
-        self.client = TestClient(app)
         self.username = "test"
         r = self.client.post(
-            "/player/create", json={"name": self.username, "email": "test@example.com"}
+            "/player/create", {"name": self.username, "email": "test@example.com"}
         )
         self.password = r.json()["token"]
 
         self.username2 = "test2"
         r = self.client.post(
             "/player/create",
-            json={"name": self.username2, "email": "test2@example.com"},
+            {"name": self.username2, "email": "test2@example.com"},
         )
         self.password2 = r.json()["token"]
 
         self.username3 = "test3"
         r = self.client.post(
             "/player/create",
-            json={"name": self.username3, "email": "test3@example.com"},
+            {"name": self.username3, "email": "test3@example.com"},
         )
         self.password3 = r.json()["token"]
 
@@ -45,14 +43,14 @@ class APITestCase(TransactionTestCase):
         return r.json()["actions"]
 
 
-class SoftserveTestCase(APITestCase):
+class GenericGameTestCase(SoftserveTestCase):
     def test_xyz(self):
         self.assertTrue(True)
 
     def test_player_play(self):
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "mirror",
                 "player": self.username,
                 "token": self.password,
@@ -65,14 +63,16 @@ class SoftserveTestCase(APITestCase):
 
         # Try an invalid action
         r = self.client.post(
-            "/aivai/submit-action", json={"action": "invalid", "action_id": action_id}
+            "/aivai/submit-action", {"action": "invalid", "action_id": action_id}
         )
-        self.assertEqual(r.status_code, 422)
+        # TODO this used to be a schema error in fastapi
+        # self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.status_code, 403)
 
         action = choice(list(self.get_actions(state)))
         r = self.client.post(
             "/aivai/submit-action",
-            json={
+            {
                 "player": self.username,
                 "token": self.password,
                 "action": action,
@@ -84,19 +84,19 @@ class SoftserveTestCase(APITestCase):
         # Confirm we can't post the action a second time
         r = self.client.post(
             "/aivai/submit-action",
-            json={
+            {
                 "player": self.username,
                 "token": self.password,
                 "action": action,
                 "action_id": action_id,
             },
         )
-        self.assertEqual(r.status_code, 401)
+        self.assertEqual(r.status_code, 403)
 
     def test_invalid_token(self):
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "mirror",
                 "player": self.username,
                 "token": self.password + "1",
@@ -107,7 +107,7 @@ class SoftserveTestCase(APITestCase):
     def test_event_create(self):
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "name": "test event",
                 "players": ["test", "test2"],
                 "game_pairs": 10,
@@ -120,7 +120,7 @@ class SoftserveTestCase(APITestCase):
         # Can't make duplicate event name
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "name": "test event",
                 "players": ["test", "test2"],
                 "game_pairs": 10,
@@ -132,7 +132,7 @@ class SoftserveTestCase(APITestCase):
 
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "name": "test event 2",
                 "players": ["test", "test2", "test3"],
                 "game_pairs": 10,
@@ -146,7 +146,7 @@ class SoftserveTestCase(APITestCase):
         self.assertEqual(Action.objects.count(), 0)
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "test event 2",
                 "player": self.username,
                 "token": self.password,
@@ -158,7 +158,7 @@ class SoftserveTestCase(APITestCase):
     def test_play_any_event(self):
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "name": "test event",
                 "players": ["test", "test2"],
                 "game_pairs": 1,
@@ -166,7 +166,7 @@ class SoftserveTestCase(APITestCase):
         )
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "name": "test event 2",
                 "players": ["test", "test2"],
                 "game_pairs": 1,
@@ -176,7 +176,7 @@ class SoftserveTestCase(APITestCase):
         # Make a move in both games, requesting * event
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "*",
                 "player": self.username,
                 "token": self.password,
@@ -186,7 +186,7 @@ class SoftserveTestCase(APITestCase):
         action = choice(self.get_actions(r.json()["state"]))
         r = self.client.post(
             "/aivai/submit-action",
-            json={
+            {
                 "player": self.username,
                 "token": self.password,
                 "action": action,
@@ -196,7 +196,7 @@ class SoftserveTestCase(APITestCase):
         self.assertEqual(r.status_code, 200)
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "*",
                 "player": self.username,
                 "token": self.password,
@@ -206,7 +206,7 @@ class SoftserveTestCase(APITestCase):
         action = choice(self.get_actions(r.json()["state"]))
         r = self.client.post(
             "/aivai/submit-action",
-            json={
+            {
                 "player": self.username,
                 "token": self.password,
                 "action": action,
@@ -218,7 +218,7 @@ class SoftserveTestCase(APITestCase):
         # We should get a 204 now
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "*",
                 "player": self.username,
                 "token": self.password,
@@ -231,7 +231,7 @@ class SoftserveTestCase(APITestCase):
 
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "mirror",
                 "player": self.username,
                 "token": self.password,
@@ -250,7 +250,7 @@ class SoftserveTestCase(APITestCase):
 
             r = self.client.post(
                 "/aivai/submit-action",
-                json={
+                {
                     "player": self.username,
                     "token": self.password,
                     "action": action,
@@ -261,7 +261,7 @@ class SoftserveTestCase(APITestCase):
 
             r = self.client.post(
                 "/aivai/play-state",
-                json={
+                {
                     "event": "mirror",
                     "player": self.username,
                     "token": self.password,
@@ -275,7 +275,7 @@ class SoftserveTestCase(APITestCase):
         # Test a double call to play-state
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "mirror",
                 "player": self.username,
                 "token": self.password,
@@ -289,7 +289,7 @@ class SoftserveTestCase(APITestCase):
     def test_event_create_no_name(self):
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "players": ["test", "test2"],
                 "game_pairs": 10,
             },
@@ -301,7 +301,7 @@ class SoftserveTestCase(APITestCase):
 
         r = self.client.post(
             "/event/create",
-            json={
+            {
                 "players": ["test", "test2"],
                 "game_pairs": 10,
             },
@@ -385,14 +385,14 @@ class ModelTestCase(TransactionTestCase):
         self.assertNotEqual(None, self.e1.find_game_for(self.u1))
 
 
-class CreeperTestCase(APITestCase):
+class CreeperTestCase(SoftserveTestCase):
     def test_threefold_repetition_draws(self):
         self.assertEqual(Game.objects.count(), 0)
 
         for move in ["c7d7", "c1d1", "d7c7", "d1c1", "c7d7", "c1d1", "d7c7", "d1c1"]:
             r = self.client.post(
                 "/aivai/play-state",
-                json={
+                {
                     "event": "mirror",
                     "player": self.username,
                     "token": self.password,
@@ -402,7 +402,7 @@ class CreeperTestCase(APITestCase):
             self.assertEqual(Game.objects.count(), 1)
             r = self.client.post(
                 "/aivai/submit-action",
-                json={
+                {
                     "player": self.username,
                     "token": self.password,
                     "action": move,
@@ -413,7 +413,7 @@ class CreeperTestCase(APITestCase):
 
         r = self.client.post(
             "/aivai/play-state",
-            json={
+            {
                 "event": "mirror",
                 "player": self.username,
                 "token": self.password,

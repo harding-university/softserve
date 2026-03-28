@@ -50,9 +50,11 @@ def limits(request):
     if request.data["token"] != THINK_TOKEN:
         raise AuthenticationFailed(detail="invalid think token")
 
-    return Response({
-        "min_iterations": MIN_ITERATIONS,
-        "max_iterations": MAX_ITERATIONS,
-        "min_workers": MIN_WORKERS,
-        "max_workers": MAX_WORKERS,
-    })
+    return Response(
+        {
+            "min_iterations": MIN_ITERATIONS,
+            "max_iterations": MAX_ITERATIONS,
+            "min_workers": MIN_WORKERS,
+            "max_workers": MAX_WORKERS,
+        }
+    )

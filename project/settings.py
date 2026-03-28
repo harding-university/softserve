@@ -133,3 +133,5 @@ SOFTSERVE_URL = environ.get("SOFTSERVE_URL", "http://localhost:8000")
 SOFTSERVE_THINK_TIME = timedelta(seconds=4.3)
 SOFTSERVE_INITIAL_STATE = get_initial_state()[0]
 SOFTSERVE_MAX_EVENT_GAMES = int(environ.get("SOFTSERVE_MAX_EVENT_GAMES", 1000))
+
+REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}
