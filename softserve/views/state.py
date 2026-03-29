@@ -4,11 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import *
 from rest_framework.response import Response
 
-from ..util import engine, get_actions, get_initial_state, SoftserveException
-
-STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
-if not STATE_REGEX:
-    raise SoftserveException("No state regex defined!")
+from ..util import get_actions, get_initial_state, get_winner, get_after
 
 
 @api_view(["GET"])
@@ -29,13 +25,12 @@ def act(request, state, action):
     if action not in actions:
         raise ValidationError(detail="invalid action")
 
-    stdout, stderr = engine("-a", action, state)
-    after = stdout.strip()
+    after, _ = get_after(state, action)
     actions, _ = get_actions(after)
     return Response({"state": after, "actions": actions, "log": stderr})
 
 
 @api_view(["GET"])
 def winner(request, state):
-    stdout, stderr = engine("-W", state)
+    stdout, stderr = get_winner(state)
     return Response({"winner": stdout.strip(), "log": stderr})

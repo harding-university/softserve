@@ -134,4 +134,8 @@ SOFTSERVE_THINK_TIME = timedelta(seconds=4.3)
 SOFTSERVE_INITIAL_STATE = get_initial_state()[0]
 SOFTSERVE_MAX_EVENT_GAMES = int(environ.get("SOFTSERVE_MAX_EVENT_GAMES", 1000))
 
+SOFTSERVE_STATE_REGEX = environ.get("SOFTSERVE_STATE_REGEX")
+if not SOFTSERVE_STATE_REGEX:
+    raise SoftserveException("No state regex defined!")
+
 REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}

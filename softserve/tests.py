@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
 from rest_framework.test import APITestCase, APITransactionTestCase
 
-from .util import engine
+from .util import __engine as engine
 from .models import *
 
 

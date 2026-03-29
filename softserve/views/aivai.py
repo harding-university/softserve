@@ -8,7 +8,7 @@ from rest_framework.exceptions import *
 from rest_framework.response import Response
 
 from ..models import Action, Event, Game, Player, AUTO_CREATE_EVENTS
-from ..util import engine, get_actions
+from ..util import get_actions, get_after, get_winner
 
 
 @api_view(["POST"])
@@ -87,16 +87,14 @@ def submit_action(request):
         raise ValidationError(detail="invalid action")
 
     # Update action
-    stdout, _ = engine(f"-a", request.data["action"], state)
+    action.after_state, _ = get_after(state, request.data["action"])
     action.notation = request.data["action"]
-    action.after_state = stdout.strip()
     action.submit_timestamp = now
     action.save()
 
     # Check if state is terminal
     game = action.game
-    stdout, _ = engine("-W", action.after_state)
-    winner = stdout.strip()
+    winner = get_winner(action.after_state)[0]
     if winner in ["x", "o", "draw"] or game.threefold_repetition:
         game.end_timestamp = now
         game.save()
